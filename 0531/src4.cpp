@@ -5,7 +5,8 @@ void whatPos(int posNum) {
 }
 
 void fight(int playerPos, int comPos) {
-	playerPos<=0||playerPos>=4? printf("반칙패\n") 
+	playerPos<=0||playerPos>=4 
+		? printf("반칙패\n") 
 		:playerPos == comPos 
 			? printf("비겼다\n") 
 			: (playerPos == 1 && comPos == 2) || 

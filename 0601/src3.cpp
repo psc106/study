@@ -5,9 +5,9 @@ const float PI = 3.141592f;
 float circleArea(int);
 
 
-
-
 void main() {
+
+	//데이터 타입 크기
 	{
 		int decimalSize = 0;
 
@@ -40,22 +40,22 @@ void main() {
 		floatSize = sizeof(long double);
 		printf("ldouble\t: %d\n", floatSize);	//15자릿수
 	}
-	
-	//반지름 입력후 넓이
+
+	//반지름 입력
 	int radius = 0;
 	printf("반지름 입력 : ");
 	scanf_s("%d", &radius);
+
+	//넓이 구하는 함수
 	circleArea(radius);
 
-
-}
-
-
+}//main
 
 
 float circleArea(int radius) {
 
-	printf("넓이 : %dxPI (%f)",radius*radius, PI * radius * radius);
 
+	printf("넓이 : %d x PI (%.3f)",radius*radius, PI * radius * radius);
+	
 	return PI* radius* radius;
 }
