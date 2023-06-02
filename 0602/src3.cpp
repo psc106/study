@@ -1,7 +1,7 @@
 #include <iostream>
 
 //입력값 중 쓰레기값 삭제
-void remove() {
+void bufferEmpty() {
 
 	char inputRemove = 0;
 
@@ -38,7 +38,7 @@ void main() {
 		//문자 예외처리
 		if (!isEsterCharacter()) {
 			printf("오류\n\n");
-			remove();
+			bufferEmpty();
 			continue;
 		}
 
