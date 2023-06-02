@@ -9,7 +9,7 @@ void main() {
 	int count = 0;
 
 	//입력(3~10)
-	while (count < 3 || count > 10) {
+	while (!isRight(count)) {
 		printf("입력(3~10) : ");
 		scanf_s("%d", &count);
 
@@ -28,7 +28,7 @@ void main() {
 	int vertical = 0;
 	while (vertical < count) {
 		//첫 문자 숫자 출력
-		printf("%d. \t", vertical + 1);
+		printf("%2d. \t", vertical + 1);
 
 		//수평을 n번 수행한다.
 		int horizen = 0;
@@ -51,7 +51,7 @@ void main() {
 	while (horizen < newCount) {
 		//첫 문자 숫자 출력
 		if (horizen % count == 0) {
-			printf("%d.\t", (horizen / count) + 1);
+			printf("%2d.\t", (horizen / count) + 1);
 		}
 
 		//무조건 n*n번 출력
@@ -65,18 +65,5 @@ void main() {
 		horizen++;
 	}
 
-
-
-
-
-
-
-	printf("*"); printf("*"); printf("*"); printf("\n"); 
-	printf("*"); printf("*"); printf("*"); printf("\n");  
-	printf("*"); printf("*"); printf("*"); printf("\n");
-
-	printf("* * * \n");
-	printf("* * * \n");
-	printf("* * * \n");
 
 }
