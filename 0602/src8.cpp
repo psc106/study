@@ -45,6 +45,7 @@ void main() {
 	int currX=3, currY=3;
 	int currMonsterX=5, currMonsterY=5;
 	int currField = 0;
+	int exitX = 0, exitY = 0;
 
 	while (true) {
 		int action = _getch();
@@ -58,20 +59,22 @@ void main() {
 			printf("%d %d\n", currX, currY);
 
 			if (currX == -1) {
-				//¸Ê ÀÌµ¿ ÇÔ¼ö
 				currX += 5;
 			}
 			else if (currX == 5) {
 				currX -= 5;
-
 			}
 			if (currY == -1) {
-				//¸Ê ÀÌµ¿ ÇÔ¼ö
 				currY += 5;
 			}
 			else if (currY == 5) {
 				currY -= 5;
-
+			}
+			if (currX == exitX && currY == exitY) {
+				currX = 3; currY = 3;
+				currField += 1;
+				exitX = (exitX + 2) % 5;
+				exitY = (exitY + 2) % 5;
 			}
 			break;
 		case 'q':
@@ -88,8 +91,17 @@ void main() {
 				else if (j == currMonsterX && i== currMonsterY) {
 					printf("Àû");
 				}
+				else if (j == exitX && i == exitY) {
+					printf("Å»");
+				}
 				else if (currField == 0) {
 					printf("¡ã");
+				}
+				else if (currField == 1) {
+					printf("¡á");
+				}
+				else if (currField == 2) {
+					printf("¢À");
 				}
 			} 
 			printf("\n");
