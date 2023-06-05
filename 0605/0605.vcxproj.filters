@@ -18,5 +18,14 @@
     <ClCompile Include="src1.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="src2.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="src3.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="src4.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
