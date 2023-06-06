@@ -46,15 +46,31 @@ const char KEY_HEAL = 'h';
 
 
 /****************** 함수 선언 시작 *********************/
-int moveX(int);//x축 이동
-int moveY(int);//y축 이동
-int edgeMove(int, int);//가장 자리 이동처리
+int MoveX(int);//x축 이동
+int MoveY(int);//y축 이동
+int MoveEdge(int, int);//가장 자리 이동처리
 
-int diffCalc(int, float); //난이도 계수에 맞게 계산
+int CalcDiff(int, float); //난이도 계수에 맞게 계산
 
-void printStatus(int, int, int, int, int);//기본 정보 print
-void printEnterField(int, int);			//
-void printField(int);						//현재 필드 정보 print
+void PrintStatus(int, int, int, int, int);//기본 정보 print
+void PrintEnterField(int, int);			//
+void PrintField(int);						//현재 필드 정보 print
+
+int CalcStartCheckerPosition(int offset, int Y, int lengthX) {
+	return 1 << (offset * Y) % lengthX;
+}
+
+bool CheckTrap(int pattern, int X, int getChecker, int lengthX) {
+	
+	int checker = getChecker;
+	for (int i = 0; i < X; i++) {
+		checker = checker >> 1;
+		if (checker == 0) {
+			checker = 1 << lengthX;
+		}
+	}
+	return (pattern & checker) == checker ? true : false;
+}
 /****************** 함수 선언 종료 *********************/
 
 //스코어 존재. 가장자리로 가면 반대편으로 가짐
@@ -77,8 +93,9 @@ void printField(int);						//현재 필드 정보 print
 /****************** 메인 시작 *********************/
 void main() {
 
-	/*	
+	/*
 	isStart : 게임 시작 유무
+	isMove : 이동키 입력
 	doTrapEvent : 장애물 밟았는지
 	doEdgeEvent : 가장자리로 이동했는지
 	doDeadEvent : 죽었는지
@@ -89,6 +106,7 @@ void main() {
 	doPotionEmptyEvent : 포션 없음
 	*/
 	bool isStart = false;
+	bool isMove = false;
 	bool doTrapEvent = false;
 	bool doEdgeEvent = false;
 	bool doDeadEvent = false;
@@ -134,7 +152,7 @@ void main() {
 		}
 
 		//맵 정보 출력
-		printField(currMapField);
+		PrintField(currMapField);
 		printf("\t");
 		printf(" 걷기[+%d] ", SCORE_WALK);
 		printf(" 탈출[+%d] ", SCORE_EXIT);
@@ -157,7 +175,7 @@ void main() {
 			//장애물 패턴을 좀더 다채롭게 하려고 offset만큼 밀어줌
 			//필드가 강일 때만 계산
 			if (currMapField == MAP_FIELD_RIVER) {
-				PatternChecKer = 1 << (offset * vertical) % MAP_SIZE_X;
+				PatternChecKer = CalcStartCheckerPosition(offset, vertical, MAP_SIZE_X);
 			}
 
 			for (int horizen = 0; horizen < MAP_SIZE_X; horizen++) {
@@ -170,12 +188,12 @@ void main() {
 				//필드가 강일 때만 계산
 				if (currMapField == MAP_FIELD_RIVER) {
 					//현재 위치가 장애물인지 확인
-					isTrap = (pattern & PatternChecKer) == PatternChecKer ? true : false;
+					isTrap = CheckTrap(pattern, 0, PatternChecKer, MAP_SIZE_X);
 
 					//비트 검사용 변수 처리
 					PatternChecKer = PatternChecKer >> 1;
 					if (PatternChecKer == 0) {
-						PatternChecKer = 1 << 16;
+						PatternChecKer = 1 << MAP_SIZE_X;
 					}
 				}
 
@@ -184,8 +202,8 @@ void main() {
 				//플레이어
 				if (horizen == currX && vertical == currY) {
 					//탈출후 바로 밟는건 데미지 처리 안함
-					if (isTrap&&!doExitEvent) {
-						playerHP -= TRAP_DAMAGE- FIELD_DAMAGE;
+					if (isTrap && !doExitEvent) {
+						playerHP -= TRAP_DAMAGE;
 						doTrapEvent = true;
 					}
 					if (playerHP <= 0) {
@@ -231,7 +249,7 @@ void main() {
 
 
 		//각종 정보 출력
-		printStatus(action, playerHP, score, difficult, potionCount);
+		PrintStatus(action, playerHP, score, difficult, potionCount);
 
 		printf("\t이동:방향키 포션:h 종료:q");
 		printf("\n");
@@ -254,7 +272,7 @@ void main() {
 		}
 		if (doExitEvent) {
 			printf("\t탈출 성공. +%d\n", SCORE_EXIT);
-			printEnterField(currMapField, FieldSelector);
+			PrintEnterField(currMapField, FieldSelector);
 			doExitEvent = false;
 		}
 		if (doPotionEvent) {
@@ -262,7 +280,7 @@ void main() {
 			doPotionEvent = false;
 		}
 		if (doPotionUseEvent) {
-			printf("\t포션 사용. [체력 +%d]\n",HEAL_POTION);
+			printf("\t포션 사용. [체력 +%d]\n", HEAL_POTION);
 			doPotionUseEvent = false;
 		}
 		if (doPotionEmptyEvent) {
@@ -281,6 +299,7 @@ void main() {
 		//클릭시 바로 이동
 		action = _getch();
 
+		//키 처리용 switch
 		switch (action) {
 		case 224:
 			//방향키 입력이 아닐경우엔 처리하지않는다.
@@ -289,21 +308,60 @@ void main() {
 				break;
 			}
 
-			//이동처리
-			currX += moveX(action);
-			currY += moveY(action);
+			isMove = true;
+			break;
 
-			//가장자리 이동
+			//포션사용
+		case KEY_HEAL:
+		case KEY_HEAL - 32:
+			action = 0;
+
+			//포션 소지시 사용가능
+			if (potionCount > 0) {
+				playerHP += HEAL_POTION;
+				if (playerHP > PLAYER_HP_MAX) {
+					playerHP = PLAYER_HP_MAX;
+				}
+				potionCount--;
+				doPotionUseEvent = true;
+				break;
+			}
+
+			doPotionEmptyEvent = true;
+			break;
+
+			//종료
+		case KEY_QUIT:
+		case KEY_QUIT - 32:
+			printf("종료");
+			return;
+
+			//예외사항
+		default:
+			action = 0;
+			printf("?");
+			continue;
+		}	//[main-while-switch] end
+
+		//이동처리
+		//플레이어 -> 가장자리 -> 전투선공 -> 몬스터 -> 전투후공
+		if (isMove)
+		{
+			//1. 플레이어 이동
+			currX += MoveX(action);
+			currY += MoveY(action);
+
+			//2. 가장자리 이동
 			if (currX == -1 || currX == MAP_SIZE_X || currY == -1 || currY == MAP_SIZE_Y) {
 				doEdgeEvent = true;
 				playerHP -= EDGE_DAMAGE;
-				currX += edgeMove(currX, MAP_SIZE_X);
-				currY += edgeMove(currY, MAP_SIZE_Y);
+				currX += MoveEdge(currX, MAP_SIZE_X);
+				currY += MoveEdge(currY, MAP_SIZE_Y);
 			}
-			//[main-while-switch-가장자리if] end
+			//[main-while-이동if-가장자리if] end
 
 
-			//전투(선공)
+			//3. 전투(선공)
 			if (currX == currMonsterX && currY == currMonsterY) {
 				doBattleEvent = true;
 				printf("\t!!!!!!!!!!!!!!!!! [기습 성공] !!!!!!!!!!!!!!!!!!!\n");
@@ -331,7 +389,7 @@ void main() {
 					//플레이어 공격
 					monsterHP -= (int)playerAttck;
 					printf("\t\t플레이어의 공격! [%d]\n", (int)playerAttck);
-					printf("\t\t\t몬스터 남은 체력 [%d]\n", monsterHP>=0? monsterHP:0);
+					printf("\t\t\t몬스터 남은 체력 [%d]\n", monsterHP >= 0 ? monsterHP : 0);
 					Sleep(1000);
 
 					//몬스터 체력 0되면 끝
@@ -357,13 +415,14 @@ void main() {
 						break;
 					}
 
-				}	//[main-while-switch-전투선공if-while] end
-			}	//[main-while-switch-전투선공if] end
+				}	//[main-while-이동if-전투선공if-while] end
+			}	//[main-while-이동if-전투선공if] end
 
+			//4. 몬스터 이동
 			//몬스터는 산 필드에서만 나옴, 앞에서 전투로 몬스터가 안죽었을 경우
 			//몬스터는 무조건 2칸씩 이동
 			//같은 x,y축일경우 같지않은 x,y축을 이동한다.
-			if (currMapField == MAP_FIELD_MOUNTAIN && monsterHP>0) {
+			if (currMapField == MAP_FIELD_MOUNTAIN && monsterHP > 0) {
 				//몬스터 X축 이동처리
 				if ((currX - currMonsterX) < 0) {
 					currMonsterX -= 1;
@@ -397,10 +456,10 @@ void main() {
 						currMonsterX += 1;
 					}
 				}
-			}	//[main-while-switch-몬스터이동if] end
+			}	//[main-while-몬스터이동if] end
 
 
-			//전투(후공)
+			//5. 전투(후공)
 			if (!doBattleEvent && currX == currMonsterX && currY == currMonsterY) {
 				doBattleEvent = true;
 				printf("\t!!!!!!!!!!!!!!!!! [전투 발생] !!!!!!!!!!!!!!!!!!!\n");
@@ -419,7 +478,7 @@ void main() {
 
 					Sleep(1000);
 
-					
+
 					//매턴 데미지 계산
 					monsterAttck = monsterSTR * ((rand() % 20)) * 0.1f;
 					playerAttck = playerSTR * ((rand() % 20)) * 0.1f;
@@ -452,184 +511,157 @@ void main() {
 						Sleep(1000);
 						break;
 					}
-				}	//[main-while-switch-전투후공if-while] end
-			}	//[main-while-switch-전투후공if] end
+				}	//[main-while-이동if-전투후공if-while] end
+			}	//[main-while-이동if-전투후공if] end
 
+		}	//[main-while-이동if] end
 
-			//죽었으면 이후 명령문 실행안함
-			if (playerHP <= 0) {
-				continue;
+		//죽었으면 이후 명령문 실행안함
+		if (playerHP <= 0) {
+			continue;
+		}
+
+		//출구도착
+		//출구 도착시 각종 정보초기화+재설정
+		if (currX == exitX && currY == exitY) {
+			doExitEvent = true;
+
+			//점수 올라감
+			score += SCORE_EXIT;
+
+			//난이도 올라감
+			difficult += 1;
+			walkDamage = FIELD_DAMAGE * (CalcDiff(difficult, DIFFICULT_RANK_FIELD) + 1);
+
+			//탈출시 플레이어 회복
+			playerHP += HEAL_EXIT;
+			if (playerHP > PLAYER_HP_MAX) {
+				playerHP = PLAYER_HP_MAX;
 			}
 
-			//출구도착
-			if (currX == exitX && currY == exitY) {
-				doExitEvent = true;
+			//출구위치, 플레이어 위치 재설정
+			exitX = rand() % MAP_SIZE_X;
+			exitY = rand() % MAP_SIZE_Y;
+			currX = rand() % MAP_SIZE_X;
+			currY = rand() % MAP_SIZE_Y;
 
-				//점수 올라감
-				score += SCORE_EXIT;
-
-				//난이도 올라감
-				difficult += 1;
-				walkDamage = FIELD_DAMAGE * (diffCalc(difficult, DIFFICULT_RANK_FIELD) + 1);
-
-				//탈출시 플레이어 회복
-				playerHP += HEAL_EXIT;
-				if (playerHP > PLAYER_HP_MAX) {
-					playerHP = PLAYER_HP_MAX;
-				}
-
-				//출구위치, 플레이어 위치 재설정
-				exitX = rand() % MAP_SIZE_X;
-				exitY = rand() % MAP_SIZE_Y;
+			//출구-플레이어 겹칠경우 플레이어 위치 재설정
+			while ((currX == exitX) && (currY == exitY)) {
 				currX = rand() % MAP_SIZE_X;
 				currY = rand() % MAP_SIZE_Y;
+			}
 
-				//출구-플레이어 겹칠경우 플레이어 위치 재설정
-				while ((currX == exitX) && (currY == exitY)) {
-					currX = rand() % MAP_SIZE_X;
-					currY = rand() % MAP_SIZE_Y;
-				}
+			//장애물, 적, 포션 초기화
+			offset = -1;
+			pattern = 0;
+			currMonsterX = -100;
+			currMonsterY = -100;
+			potionX = -100;
+			potionY = -100;
 
-				//장애물, 적, 포션 초기화
-				offset = -1;
-				pattern = 0;
-				currMonsterX = -100;
-				currMonsterY = -100;
-				potionX = -100;
-				potionY = -100;
+			//필드 이동 확률 계산(길20% 강30% 산50%)
+			FieldSelector = (rand() % 10001);
 
-				//필드 이동 확률 계산(길20% 강30% 산50%)
-				FieldSelector = (rand() % 10001);
+			//필드 : 길
+			if (FieldSelector <= 2000) {
+				currMapField = MAP_FIELD_ROAD;
 
-				//필드 : 길
-				if (FieldSelector <= 2000) {
-					currMapField = MAP_FIELD_ROAD;
+				//길일 경우 포션 생성
+				potionX = rand() % MAP_SIZE_X;
+				potionY = rand() % MAP_SIZE_Y;
 
-					//길일 경우 포션 생성
+				//포션-입구 겹칠 경우 재생성
+				while ((potionX == exitX) && (potionY == exitY)) {
 					potionX = rand() % MAP_SIZE_X;
 					potionY = rand() % MAP_SIZE_Y;
+				}
+			}	//[main-while-출구도착if-길if] end
 
-					//포션-입구 겹칠 경우 재생성
-					while ((potionX == exitX) && (potionY == exitY)) {
-						potionX = rand() % MAP_SIZE_X;
-						potionY = rand() % MAP_SIZE_Y;
-					}
-				}	//[main-while-switch-출구도착if-길if] end
+			//필드 : 강
+			else if (FieldSelector > 2000 && FieldSelector <= 5000) {
+				currMapField = MAP_FIELD_RIVER;
 
-				//필드 : 강
-				else if (FieldSelector > 2000 && FieldSelector <= 5000) {
-					currMapField = MAP_FIELD_RIVER;
+				//필드가 강일 경우 장애물 생성
+				int trapSum = 0;
 
-					//필드가 강일 경우 장애물 생성
-					int trapSum = 0;
+				//2의 N승씩 증가하는 변수
+				int binaryCount = 1;//1,2,4,8,16
 
-					//2의 N승씩 증가하는 변수
-					int binaryCount = 1;//1,2,4,8,16
+				//n번씩 밀어줄 패턴
+				offset = (rand() % 12) + 4;
+				for (int patternCursor = 0; patternCursor < MAP_SIZE_X; patternCursor++) {
 
-					//n번씩 밀어줄 패턴
-					offset = (rand() % 12)+4;
-					for (int patternCursor = 0; patternCursor < MAP_SIZE_X; patternCursor++) {
-
-						//남은 빈칸 == 남은 장애물칸 일시 다 장애물로 채움 
-						if (MAP_SIZE_X - trapSum == MAP_SIZE_X - pattern) {
-							trapSum++;
-							pattern += binaryCount;
-							binaryCount *= 2;
-							continue;
-						}
-
-						//장애물 전부 생성시 종료
-						if (trapSum >= TRAP_COUNT_MAX) {
-							break;
-						}
-
-						//짝수/홀수 구분해서 홀수일 경우 장애물 생성
-						int tmp = rand() % 2;
-						if (tmp == 1) {
-							trapSum++;
-							pattern += binaryCount;
-						}
-
-						//2배수씩 증가한다.
+					//남은 빈칸 == 남은 장애물칸 일시 다 장애물로 채움 
+					if (MAP_SIZE_X - trapSum == MAP_SIZE_X - pattern) {
+						trapSum++;
+						pattern += binaryCount;
 						binaryCount *= 2;
+						continue;
 					}
-				}	//[main-while-switch-출구도착if-강elif] end
 
-				//필드 : 산
-				else if (FieldSelector > 5000 && FieldSelector <= 10000) {
-					currMapField = MAP_FIELD_MOUNTAIN;
+					//장애물 전부 생성시 종료
+					if (trapSum >= TRAP_COUNT_MAX) {
+						break;
+					}
 
-					//필드가 산일경우 몬스터 생성
+					//짝수/홀수 구분해서 홀수일 경우 장애물 생성
+					int tmp = rand() % 2;
+					if (tmp == 1) {
+						trapSum++;
+						pattern += binaryCount;
+					}
+
+					//2배수씩 증가한다.
+					binaryCount *= 2;
+				}
+			}	//[main-while-switch-출구도착if-강elif] end
+
+			//필드 : 산
+			else if (FieldSelector > 5000 && FieldSelector <= 10000) {
+				currMapField = MAP_FIELD_MOUNTAIN;
+
+				//필드가 산일경우 몬스터 생성
+				currMonsterX = rand() % MAP_SIZE_X;
+				currMonsterY = rand() % MAP_SIZE_Y;
+				monsterHP = MONSTER_HP_DEFAULT * (CalcDiff(difficult, DIFFICULT_RANK_BATTLE) + 1);
+				monsterSTR = MONSTER_STR_DEFAULT * (CalcDiff(difficult, DIFFICULT_RANK_BATTLE) + 1);
+
+				//플레이어-몬스터 겹칠경우 몬스터 위치 재설정
+				while ((currMonsterX == currX) && (currMonsterY == currY)) {
 					currMonsterX = rand() % MAP_SIZE_X;
 					currMonsterY = rand() % MAP_SIZE_Y;
-					monsterHP = MONSTER_HP_DEFAULT * (diffCalc(difficult, DIFFICULT_RANK_BATTLE)+1);
-					monsterSTR = MONSTER_STR_DEFAULT * (diffCalc(difficult, DIFFICULT_RANK_BATTLE)+1);
-
-					//플레이어-몬스터 겹칠경우 몬스터 위치 재설정
-					while ((currMonsterX == currX) && (currMonsterY == currY)) {
-						currMonsterX = rand() % MAP_SIZE_X;
-						currMonsterY = rand() % MAP_SIZE_Y;
-					}
-				}	//[main-while-switch-출구도착if-산elif] end
-
-			}	//[main-while-switch-출구도착if] end
-
-
-			//포션 획득시 
-			if ((potionX == currX) && (potionY == currY)) {
-				potionCount += 1;
-				if (potionCount > POTION_COUNT_MAX) {
-					potionCount = POTION_COUNT_MAX;
 				}
+			}	//[main-while-switch-출구도착if-산elif] end
 
-				potionX = -100;
-				potionY = -100;
-				doPotionEvent = true;
+		}	//[main-while-switch-출구도착if] end
+
+
+		//포션 획득시 
+		if ((potionX == currX) && (potionY == currY)) {
+			potionCount += 1;
+			if (potionCount > POTION_COUNT_MAX) {
+				potionCount = POTION_COUNT_MAX;
 			}
 
-			//움직이면 1점씩 오름
-			score += SCORE_WALK;
-
-			//이동후 체력처리
-			//다른 이벤트 발생시 처리 안함
-			if (!doBattleEvent && !doExitEvent && !doEdgeEvent && !doTrapEvent && !doPotionEvent) {
-				playerHP -= walkDamage;
-			}
-			break;
-
-			//포션사용
-		case KEY_HEAL:
-		case KEY_HEAL -32:
-			action = 0;
-
-			//포션 소지시 사용가능
-			if (potionCount > 0) {
-				playerHP += HEAL_POTION;
-				if (playerHP > PLAYER_HP_MAX) {
-					playerHP = PLAYER_HP_MAX;
-				}
-				potionCount--;
-				doPotionUseEvent = true;
-				break;
-			} 
-
-			doPotionEmptyEvent = true;
-			break;
-
-			//종료
-		case KEY_QUIT:
-		case KEY_QUIT - 32:
-			printf("종료");
-			return;
-
-			//예외사항
-		default:
-			action = 0;
-			printf("?");
-			continue;
-		}	//[main-while-switch] end
+			potionX = -100;
+			potionY = -100;
+			doPotionEvent = true;
+		}
 
 
+		//움직이면 1점씩 오름
+		score += SCORE_WALK;
+
+		//이동후 체력처리
+		//다른 이벤트 발생시 처리 안함
+		if (!doBattleEvent && 
+			!doExitEvent && 
+			!doEdgeEvent && 
+			!(currMapField == MAP_FIELD_RIVER&&CheckTrap(pattern,currX,CalcStartCheckerPosition(offset, currY, MAP_SIZE_X), MAP_SIZE_X)) &&
+			!doPotionEvent) 
+		{
+			playerHP -= walkDamage;
+		}
 	}	//[main-while] end
 
 	_getch();
@@ -643,7 +675,7 @@ void main() {
 /****************** 함수 정의 시작 *********************/
 
 //x축 이동
-int moveX(int movePosition) {
+int MoveX(int movePosition) {
 	//오른쪽 방향키
 	if (movePosition == RIGHT) {
 		return 1;
@@ -657,7 +689,7 @@ int moveX(int movePosition) {
 }
 
 //y축 이동
-int moveY(int movePosition) {
+int MoveY(int movePosition) {
 	//위 방향키
 	if (movePosition == UP) {
 		return 1;
@@ -671,7 +703,7 @@ int moveY(int movePosition) {
 }
 
 //가장 자리 이동처리
-int edgeMove(int currAxis, int size) {
+int MoveEdge(int currAxis, int size) {
 	if (currAxis == -1) {
 		return size;
 	}
@@ -681,12 +713,12 @@ int edgeMove(int currAxis, int size) {
 	return 0;
 }
 
-int diffCalc(int difficult, float count) {
+int CalcDiff(int difficult, float count) {
 	return (int)(difficult * count);
 }
 
 //기본 정보 print
-void printStatus(int movePosition, int HP, int score, int difficult, int potion) {
+void PrintStatus(int movePosition, int HP, int score, int difficult, int potion) {
 	printf("\n");
 	printf("\t\t");
 	//위 방향키
@@ -716,7 +748,7 @@ void printStatus(int movePosition, int HP, int score, int difficult, int potion)
 	printf("\n");
 }
 
-void printEnterField(int field, int percent) {
+void PrintEnterField(int field, int percent) {
 	printf("\t");
 	if (field == MAP_FIELD_ROAD) {
 		printf("길에 입장(%.2f)", percent * 0.01f);
@@ -731,7 +763,7 @@ void printEnterField(int field, int percent) {
 }
 
 
-void printField(int field) {
+void PrintField(int field) {
 	printf("\t\t");
 	if (field == MAP_FIELD_ROAD) {
 		printf("[ 길 ] ");
