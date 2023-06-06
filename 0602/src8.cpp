@@ -31,7 +31,7 @@ const int SCORE_WALK = 1;
 const int SCORE_EXIT = 10;
 const int SCORE_BATTLE = 15;
 
-const int HEAL_POTION = 8;
+const int HEAL_POTION = 20;
 const int HEAL_EXIT = 8;
 
 const int TRAP_COUNT_MAX = 7;
@@ -50,7 +50,7 @@ int moveX(int);//x축 이동
 int moveY(int);//y축 이동
 int edgeMove(int, int);//가장 자리 이동처리
 
-int diffCalc(int difficult, float count); //난이도 계수에 맞게 계산
+int diffCalc(int, float); //난이도 계수에 맞게 계산
 
 void printStatus(int, int, int, int, int);//기본 정보 print
 void printEnterField(int, int);			//
@@ -67,36 +67,43 @@ void printField(int);						//현재 필드 정보 print
 //장애물은 행마다 패턴이 똑같음.
 //적은 내가 이동할때마다 나를 따라오며, 난이도에 따라 점점 강해짐
 
+
+//추가 : 추가 아이템(검:공격력 증가, 방패:최대체력증가)
+//		장애물 패턴 다양화. 매 행마다 다른 패턴으로 생성
+//		적 숫자/종류
+//		이동불가 타일
+//		메커니즘의 함수화. 현재 메커니즘마다 return할 값이 너무 많아서 따로 안건들였음. 포인터 배우면 추가
+
 /****************** 메인 시작 *********************/
 void main() {
 
 	/*	
 	isStart : 게임 시작 유무
-	isTrapEvent : 장애물 밟았는지
-	isEdgeEvent : 가장자리로 이동했는지
-	isDeadEvent : 죽었는지
-	isBattleEvent : 전투했는지
-	isExitEvent : 탈출했는지
-	isPotionEvent : 포션 획득
-	isPotionUseEvent : 포션 사용
-	isPotionEmptyEvent : 포션 없음
+	doTrapEvent : 장애물 밟았는지
+	doEdgeEvent : 가장자리로 이동했는지
+	doDeadEvent : 죽었는지
+	doBattleEvent : 전투했는지
+	doExitEvent : 탈출했는지
+	doPotionEvent : 포션 획득
+	doPotionUseEvent : 포션 사용
+	doPotionEmptyEvent : 포션 없음
 	*/
 	bool isStart = false;
-	bool isTrapEvent = false;
-	bool isEdgeEvent = false;
-	bool isDeadEvent = false;
-	bool isBattleEvent = false;
-	bool isExitEvent = false;
-	bool isPotionEvent = false;
-	bool isPotionUseEvent = false;
-	bool isPotionEmptyEvent = false;
+	bool doTrapEvent = false;
+	bool doEdgeEvent = false;
+	bool doDeadEvent = false;
+	bool doBattleEvent = false;
+	bool doExitEvent = false;
+	bool doPotionEvent = false;
+	bool doPotionUseEvent = false;
+	bool doPotionEmptyEvent = false;
 
 	int difficult = 0;	//난이도
 	int score = 0;		//점수
 	int action = -1;	//누른 키 값 저장
 	int playerDamageSum = 0;	//전투에서 받은 데미지
 	int potionCount = 0;		//포션 갯수
-	int currfieldDamage = 1;	//현재 걷기 데미지
+	int walkDamage = 1;	//현재 걷기 데미지
 
 	//스탯 정보
 	int playerHP = PLAYER_HP_DEFAULT;
@@ -132,7 +139,7 @@ void main() {
 		printf(" 걷기[+%d] ", SCORE_WALK);
 		printf(" 탈출[+%d] ", SCORE_EXIT);
 		printf(" 전투승리[+%d]\t\t", SCORE_BATTLE);
-		printf("걷기 데미지[-%2d]", currfieldDamage);
+		printf("걷기 데미지[-%2d]", walkDamage);
 		printf("\n");
 
 		//맵 그리기
@@ -177,13 +184,13 @@ void main() {
 				//플레이어
 				if (horizen == currX && vertical == currY) {
 					//탈출후 바로 밟는건 데미지 처리 안함
-					if (isTrap&&!isExitEvent) {
+					if (isTrap&&!doExitEvent) {
 						playerHP -= TRAP_DAMAGE- FIELD_DAMAGE;
-						isTrapEvent = true;
+						doTrapEvent = true;
 					}
 					if (playerHP <= 0) {
 						printf("♨");
-						isDeadEvent = true;
+						doDeadEvent = true;
 					}
 					else {
 						printf("나");
@@ -230,41 +237,41 @@ void main() {
 		printf("\n");
 
 		//각종 이벤트 알람 출력
-		if (isEdgeEvent) {
+		if (doEdgeEvent) {
 			printf("\t순간 이동. -%d\n", EDGE_DAMAGE);
-			isEdgeEvent = false;
+			doEdgeEvent = false;
 		}
 
-		if (isTrapEvent) {
+		if (doTrapEvent) {
 			printf("\t장애물을 밟았다. -%d\n", TRAP_DAMAGE);
-			isTrapEvent = false;
+			doTrapEvent = false;
 		}
 
-		if (isBattleEvent) {
+		if (doBattleEvent) {
 			printf("\t전투 발생. -%d\n", playerDamageSum);
 			playerDamageSum = 0;
-			isBattleEvent = false;
+			doBattleEvent = false;
 		}
-		if (isExitEvent) {
+		if (doExitEvent) {
 			printf("\t탈출 성공. +%d\n", SCORE_EXIT);
 			printEnterField(currMapField, FieldSelector);
-			isExitEvent = false;
+			doExitEvent = false;
 		}
-		if (isPotionEvent) {
+		if (doPotionEvent) {
 			printf("\t포션 획득. \n");
-			isPotionEvent = false;
+			doPotionEvent = false;
 		}
-		if (isPotionUseEvent) {
+		if (doPotionUseEvent) {
 			printf("\t포션 사용. [체력 +%d]\n",HEAL_POTION);
-			isPotionUseEvent = false;
+			doPotionUseEvent = false;
 		}
-		if (isPotionEmptyEvent) {
+		if (doPotionEmptyEvent) {
 			printf("\t포션이 없습니다. \n");
-			isPotionEmptyEvent = false;
+			doPotionEmptyEvent = false;
 		}
 
 		//죽을 경우 종료
-		if (isDeadEvent) {
+		if (doDeadEvent) {
 			printf("당신은 죽었습니다.\n");
 			break;
 		}
@@ -288,7 +295,7 @@ void main() {
 
 			//가장자리 이동
 			if (currX == -1 || currX == MAP_SIZE_X || currY == -1 || currY == MAP_SIZE_Y) {
-				isEdgeEvent = true;
+				doEdgeEvent = true;
 				playerHP -= EDGE_DAMAGE;
 				currX += edgeMove(currX, MAP_SIZE_X);
 				currY += edgeMove(currY, MAP_SIZE_Y);
@@ -298,7 +305,7 @@ void main() {
 
 			//전투(선공)
 			if (currX == currMonsterX && currY == currMonsterY) {
-				isBattleEvent = true;
+				doBattleEvent = true;
 				printf("\t!!!!!!!!!!!!!!!!! [기습 성공] !!!!!!!!!!!!!!!!!!!\n");
 				printf("\t!!!!!!!!!!!!!!! [플레이어 선공] !!!!!!!!!!!!!!!!!\n");
 				Sleep(1000);
@@ -394,8 +401,8 @@ void main() {
 
 
 			//전투(후공)
-			if (!isBattleEvent && currX == currMonsterX && currY == currMonsterY) {
-				isBattleEvent = true;
+			if (!doBattleEvent && currX == currMonsterX && currY == currMonsterY) {
+				doBattleEvent = true;
 				printf("\t!!!!!!!!!!!!!!!!! [전투 발생] !!!!!!!!!!!!!!!!!!!\n");
 				printf("\t!!!!!!!!!!!!!!! [플레이어 후공] !!!!!!!!!!!!!!!!!\n");
 				Sleep(1000);
@@ -456,14 +463,14 @@ void main() {
 
 			//출구도착
 			if (currX == exitX && currY == exitY) {
-				isExitEvent = true;
+				doExitEvent = true;
 
 				//점수 올라감
 				score += SCORE_EXIT;
 
 				//난이도 올라감
 				difficult += 1;
-				currfieldDamage = FIELD_DAMAGE * (diffCalc(difficult, DIFFICULT_RANK_FIELD) + 1);
+				walkDamage = FIELD_DAMAGE * (diffCalc(difficult, DIFFICULT_RANK_FIELD) + 1);
 
 				//탈출시 플레이어 회복
 				playerHP += HEAL_EXIT;
@@ -577,7 +584,7 @@ void main() {
 
 				potionX = -100;
 				potionY = -100;
-				isPotionEvent = true;
+				doPotionEvent = true;
 			}
 
 			//움직이면 1점씩 오름
@@ -585,8 +592,8 @@ void main() {
 
 			//이동후 체력처리
 			//다른 이벤트 발생시 처리 안함
-			if (!isBattleEvent && !isExitEvent && !isEdgeEvent && !isTrapEvent && !isPotionEvent) {
-				playerHP -= currfieldDamage;
+			if (!doBattleEvent && !doExitEvent && !doEdgeEvent && !doTrapEvent && !doPotionEvent) {
+				playerHP -= walkDamage;
 			}
 			break;
 
@@ -602,11 +609,11 @@ void main() {
 					playerHP = PLAYER_HP_MAX;
 				}
 				potionCount--;
-				isPotionUseEvent = true;
+				doPotionUseEvent = true;
 				break;
 			} 
 
-			isPotionEmptyEvent = true;
+			doPotionEmptyEvent = true;
 			break;
 
 			//종료
