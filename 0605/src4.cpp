@@ -2,6 +2,7 @@
 #include <conio.h>
 
 const int ARRAY_BOARD_LENGTH = 5;
+const int MOVE_COUNT = 1;
 
 //동작 함수
 void MoveFunc();
@@ -64,11 +65,11 @@ void MoveFunc() {
 
 			if (moveMode)
 			{
-				position = ChangePosition_Move(position, -1, ARRAY_BOARD_LENGTH);
+				position = ChangePosition_Move(position, -MOVE_COUNT, ARRAY_BOARD_LENGTH);
 			}
 			else if (!moveMode)
 			{
-				position = ChangePosition_Hold(position, -1, ARRAY_BOARD_LENGTH);
+				position = ChangePosition_Hold(position, -MOVE_COUNT, ARRAY_BOARD_LENGTH);
 			}
 
 			board[position] = '0';
@@ -82,15 +83,15 @@ void MoveFunc() {
 
 			if (moveMode)
 			{
-				position = ChangePosition_Move(position, 1, ARRAY_BOARD_LENGTH);
+				position = ChangePosition_Move(position, MOVE_COUNT, ARRAY_BOARD_LENGTH);
 			}
 			else if (!moveMode)
 			{
-				position = ChangePosition_Hold(position, 1, ARRAY_BOARD_LENGTH);
+				position = ChangePosition_Hold(position, MOVE_COUNT, ARRAY_BOARD_LENGTH);
 			}
 
 			board[position] = '0';
-			break;
+			break; 
 
 			//외곽 넘으면 끝부분에 출력
 		case 'h':
@@ -112,12 +113,19 @@ void MoveFunc() {
 			}
 			break;
 
+			//종료
+		case 'q':
+		case 'Q':
+			printf("종료\n");
+			return;
+
 		default:
 			//입력 키(a,d) 이외일 경우 현상 유지
 			repaint = false;
 		}
 
 	}//[MoveFunc-while] 종료
+
 
 }	//[MoveFunc] 종료
 
@@ -135,6 +143,7 @@ int ChangePosition_Move(int getPosition, int moveCount, int getLength) {
 	else if (getLength >= getLength)
 	{
 		getPosition = (getPosition) % getLength;
+
 	}
 
 	return getPosition;
