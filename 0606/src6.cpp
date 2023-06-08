@@ -6,7 +6,6 @@ void CardFunc();
 void PrintCard(int);
 void Swap(int*, int*);
 
-
 void main() {
 	srand((unsigned)time(NULL));
 	CardFunc();
@@ -15,6 +14,7 @@ void main() {
 
 //카드 뽑는 함수
 void CardFunc() {
+
 
 	//a2345 67890 jqk
 	//클로버, 스페이드, 하트, 다이아
@@ -69,3 +69,4 @@ void Swap(int* num1, int* num2) {
 	*num1 = *num2;
 	*num2 = tmp;
 }// [Swap] end
+
