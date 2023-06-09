@@ -6,15 +6,16 @@ const int DIRECTION_Y[] = { 1, -1, 0, 0, 0 };
 const int DIRECTION_X[] = { 0, 0, 1, -1, 0 };
 const int MAP_SIZE_MIN = 3;
 const int MAP_SIZE_MAX = 6;
-const int SWAP_COUNT = 300;
+const int SWAP_COUNT = 1000;
 
 void Func();
 
 void SaveDirection(int*, int);
 void Swap(int*, int*);
+bool Quit(int);
 
 void SavePosition(int*, int*, int*, int*, int);
-void MoveEdge(int*, int*, int);
+bool MoveEdge(int*, int*, int);
 
 bool CheckSuccess(int(*)[MAP_SIZE_MAX], int);
 
@@ -33,12 +34,14 @@ void Func() {
 
 	int direction = 4;
 	int action = -1;
+	int count = 0;
+
 	int myX = -1, myY = - 1;
 	int blockX = - 1, blockY = - 1;
 
 	//사이즈 입력(3~6)
 	while (size < MAP_SIZE_MIN || size >MAP_SIZE_MAX) {
-		printf("사이즈 입력(3~6): ");
+		printf("사이즈 입력(%d~%d): ",MAP_SIZE_MIN, MAP_SIZE_MAX);
 		scanf_s("%d", &size);
 	}
 
@@ -68,19 +71,34 @@ void Func() {
 		Swap(&map[myY][myX], &map[blockY][blockX]);
 	}
 
+	//시작 값을 하단우측으로 고정
+	//가로
+	for (int i = 0; i < size; i++) {
+		SavePosition(&myX, &myY, &blockX, &blockY, 3);
+		MoveEdge(&myX, &myY, size);
+		Swap(&map[myY][myX], &map[blockY][blockX]);
+	}
+	//세로
+	for (int i = 0; i < size; i++) {
+		SavePosition(&myX, &myY, &blockX, &blockY, 1);
+		MoveEdge(&myX, &myY, size);
+		Swap(&map[myY][myX], &map[blockY][blockX]);
+	}
+
 	//게임 시작
 	while (true) {
 
 		//그리기
 		system("cls");
-		printf("조작 : W,A,S,D\n");
-		printf("(%d, %d)\n", myX, myY);
+		printf("(%d, %d)\t이동 횟수 : %d\n\n", myX, myY, count);
 		for (int vertical = 0; vertical < size; vertical++) {
 			for (int horizen = 0; horizen < size; horizen++) {
-				printf("%2d ", map[vertical][horizen]);
+				printf(" %2d ", map[vertical][horizen]);
 			}
-			printf("\n");
+			printf("\n\n");
 		}
+		printf("조작 : W,A,S,D\n");
+		printf("종료 : Q\n");
 
 		//성공 여부 확인
 		if (myX == size - 1 && myY == size - 1) {
@@ -91,13 +109,21 @@ void Func() {
 			}
 		}
 
+		//종료 여부 확인
+		if (Quit(action)) {
+			printf("종료\n");
+			return;
+		}
+
 		//키 입력
 		action = _getch();
 
+
 		//방향->이동좌표->외곽처리->데이터 스왑
 		SaveDirection(&direction, action);
+
 		SavePosition(&myX, &myY, &blockX, &blockY, direction);
-		MoveEdge(&myX, &myY, size);
+		if (MoveEdge(&myX, &myY, size) && direction>=0 && direction <4) {count++;}
 		Swap(&map[myY][myX], &map[blockY][blockX]);
 
 	}
@@ -113,20 +139,25 @@ void SavePosition(int* previousX, int* previousY, int* blockX, int* blockY, int 
 
 //외곽 처리
 //외곽을 넘으면 이동하지않음
-void MoveEdge(int* x, int* y, int size) {
+bool MoveEdge(int* x, int* y, int size) {	
 	if (*y >= size) {
 		*y = size - 1;
+		return false;
 	}
 	else if (*y <= -1) {
 		*y = 0;
+		return false;
 	}
 
 	if (*x >= size) {
 		*x = size - 1;
+		return false;
 	}
 	else if (*x <= -1) {
 		*x = 0;
+		return false;
 	}
+	return true;
 }
 
 //방향 저장(정수)
@@ -175,6 +206,10 @@ bool CheckSuccess(int(*map)[MAP_SIZE_MAX], int size) {
 	}
 }
 
+//프로그램 종료
+bool Quit(int action) {
+	return action == 'Q' || action == 'q';
+}
 
 //데이터 스왑
 void Swap(int* num1, int* num2) {
