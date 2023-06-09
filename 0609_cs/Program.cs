@@ -85,17 +85,17 @@ namespace _0609_cs
                     comMax = selectIndex(selectCard, 1);
 
                     //승리 구분
-                    if (selectCard[0, myMax] / 13 > selectCard[1, comMax] / 13)
+                    if (selectCard[0, myMax] / 13 < selectCard[1, comMax] / 13)
                     {
                         Console.WriteLine("내 승리");
                     }
-                    else if (selectCard[0, myMax] / 13 < selectCard[1, comMax] / 13)
+                    else if (selectCard[0, myMax] / 13 > selectCard[1, comMax] / 13)
                     {
                         Console.WriteLine("컴퓨터 승리");
                     }
                     else
                     {
-                        if (selectCard[0, myMax] < selectCard[1, comMax])
+                        if (selectCard[0, myMax] > selectCard[1, comMax])
                         {
                             Console.WriteLine("내 승리");
                         }
