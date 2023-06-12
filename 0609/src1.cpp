@@ -2,6 +2,9 @@
 #include <string>
 
 void main() {
+	wchar_t a = '¡Ú';
+	printf("%wc", a);
+
 
 	int* p = NULL;
 	int size = 4;
