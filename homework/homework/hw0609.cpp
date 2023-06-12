@@ -12,6 +12,7 @@ const int DIFFICULT_COUNT_MIN = 2;
 const int DIFFICULT_COUNT_MAX = 4;
 const int DECK_COUNT_MAX = 52;
 const int MIX_COUNT = 300;
+const float MULTIPLE = 0.9f;
 
 const int DUMMY_DECK_DEFAULT = -1;
 const int CHIP_DEFAULT = 100;
@@ -72,7 +73,7 @@ void main() {
 //게임 시작전 초기화
 void init() {
 	srand((unsigned int)time(NULL));
-	system("mode con cols=40 lines=30");
+	system("mode con cols=40 lines=50");
 }//[init] end
 
 //게임 시작
@@ -101,11 +102,11 @@ void StartGame() {
 
 	//난이도 입력
 	char* str = NULL;
-	while (deckDiff < 2 || deckDiff > 4) {
+	while (deckDiff < DIFFICULT_COUNT_MIN || deckDiff > DIFFICULT_COUNT_MAX) {
 		str = new char[4];
 
 		ClearLineBack(0);
-		printf("입력 : ");
+		printf("난이도 입력(2~4) : ");
 
 		deckDiff = inputNumber(str, 4);
 	}//난이도 입력 종료
@@ -117,6 +118,7 @@ void StartGame() {
 	//카드 초기화+셔플
 	for (int i = 0; i < DECK_COUNT_MAX; i++) {
 		deck[i] = i;
+		dummy[i] = -1;
 	}
 	Shuffle(MIX_COUNT, deck, DECK_COUNT_MAX);
 
@@ -129,21 +131,25 @@ void StartGame() {
 			for (int i = 0; i < DECK_COUNT_MAX; i++) {
 				if (deck[i] != -1) {
 					dummy[i] = deck[i];
+					deck[i] = -1;
 				}
 			}
+
+			_getch();
 			//더미와 덱을 바꿈
 			int* tmp = deck;
 			deck = dummy;
 			dummy = tmp;
 			//셔플
+
 			Shuffle(MIX_COUNT, deck, DECK_COUNT_MAX);
 		}//[StartGame-while-if] end 덱 섞기
 
 		//맨위 메세지 출력
 		ClearLineBack(0);
-		printf("잔고 %d\t", chip);
-		printf("목표 %d\t", target);
-		printf("%d 라운드\t", round+1);
+		printf("잔고 %5d\t", chip);
+		printf("목표 %5d\t", target);
+		printf("%2d라운드\t", round+1);
 
 		//패배처리
 		if (chip <= 0) {
@@ -196,24 +202,28 @@ void StartGame() {
 					if (currBatting > chip || currBatting < 1) {
 						ClearLineBack(POSITION_INPUT+1);
 						printf("입력 오류");
+						ChangeCursor(0,POSITION_INPUT);
+						ClearLineBack(POSITION_INPUT);
+						printf("배팅금액[1~%d] : ", chip);
 						continue;
 					}
 				}//배팅 입력 종료
+				ClearLine(POSITION_INPUT, 2);
 
 				//배팅시 처리				
 				chip -= currBatting;
 				chipSum += currBatting;
-				incomeSum += currBatting * (deckDiff - (i * 0.7f));
+				incomeSum += currBatting * (deckDiff - (i * MULTIPLE));
 					
 				//상태창에 출력
 				ChangeCursor(0, POSITION_STATUS_2 + i);
-				printf("배팅[%d] %d(%d) ", i + 1, (int)(currBatting * (deckDiff - (i * 0.7f))), currBatting);
+				printf("배팅[%d] %d(%d) ", i + 1, (int)(currBatting * (deckDiff - (i * MULTIPLE))), currBatting);
 				ChangeCursor(0, POSITION_STATUS_2 + deckDiff);
 				printf("배팅합 : %d(%d) ", incomeSum, chipSum);
 				
 				//입력창 지움
 				ClearLine(POSITION_INPUT, 1);
-
+				
 				//배팅 이벤트 나가기
 				batting = false;				
 			}//[StartGame-while-for-while] end 배팅 이벤트
@@ -225,6 +235,8 @@ void StartGame() {
 		//내카드 뽑기
 		playerSelectCard = SelectCard(deck, DECK_COUNT_MAX, dummy, DECK_COUNT_MAX);
 		PrintCard_Player(playerSelectCard);
+
+		ClearLine(POSITION_INPUT);
 
 		//마음의 준비
 		_getch();
@@ -268,6 +280,7 @@ void StartGame() {
 				deckEmpty = true;
 				ChangeCursor(0, POSITION_STATUS_2);
 				printf("덱에 남은 카드가 너무 적습니다.\n카드를 다시 섞습니다.");
+				_getch();
 				break;
 			}
 		}
@@ -286,7 +299,7 @@ bool isBatting(int diff, int index) {
 
 		ClearLineBack(POSITION_INPUT);
 
-		printf("배팅하시겠습니까?[x%.1f](N/Y) : ", diff - (index * 0.7f));
+		printf("배팅하시겠습니까?[x%.1f](N/Y) : ", diff - (index * MULTIPLE));
 		int action = _getch();
 
 		switch (action) {
@@ -515,10 +528,10 @@ int DrawTop(int* arr, int length, int index) {
 //뽑은 카드를 더미에 추가함
 //#1
 void Discard(int number, int* arr, int length) {
-
 	for (int i = 0; i < length; i++) {
 		if (arr[i] == DUMMY_DECK_DEFAULT) {
-			arr[i] = number;
+			*(arr+i) = number;
+			return;
 		}
 	}
 }
@@ -567,7 +580,7 @@ void Swap(int* num1, int* num2) {
 
 //커서이동함수
 //coordinate(좌표계)
-//Fightdows.h
+//windows.h
 void ChangeCursor(short x, short y) {
 	COORD Cur = { x,y };
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), Cur);
