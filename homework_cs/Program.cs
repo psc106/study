@@ -13,7 +13,13 @@ namespace homework_cs
         static void Main(string[] args)
         {
 
-            Hw0612 hw = new Hw0612();
+            TicTacGame hw = null;
+            while (true)
+            {
+                Console.Clear();
+                hw = new TicTacGame();
+                hw.Start();
+            }
         }
     }
 }
