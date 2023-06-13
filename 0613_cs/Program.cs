@@ -10,8 +10,13 @@ namespace _0613_cs
     {
         static void Main(string[] args)
         {
-            CoinTrackerMap c = new CoinTrackerMap(5);
-            
+            CoinTrackerGame game = new CoinTrackerGame();
+
+            while (game.start())
+            {
+                Console.ReadKey();
+                Console.Clear();
+            }
         }
     }
 }
