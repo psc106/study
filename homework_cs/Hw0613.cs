@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace _0613_cs
+namespace homework_cs
 {
 
     public class CoinTrackerGame
@@ -59,8 +59,8 @@ namespace _0613_cs
             map.SetFieldStatus(player.GetX(), player.GetY(), 1);
             for (int i = 0; i < stone.Length; i++)
             {
-                stone[i] = new CoinTrackerMover(0,0);
-                while ( map.getFieldStatus(stone[i].GetX(), stone[i].GetY()) != 0)
+                stone[i] = new CoinTrackerMover(0, 0);
+                while (map.getFieldStatus(stone[i].GetX(), stone[i].GetY()) != 0)
                 {
                     stone[i].SetRandomXY(size);
                 }
@@ -112,7 +112,7 @@ namespace _0613_cs
                         direction = 1;
                         isMove = true;
                         break;
-                    case ConsoleKey.D:                        
+                    case ConsoleKey.D:
                     case ConsoleKey.RightArrow:
                         direction = 0;
                         isMove = true;
@@ -145,7 +145,7 @@ namespace _0613_cs
                 {
                     isWork = true;
                     timer.Dispose();
-                    
+
 
                     Console.Write("재시작중                  ");
                     return true;
@@ -157,7 +157,7 @@ namespace _0613_cs
                     player.MoveXY_Hold(size, direction);
                     currX = player.GetX();
                     currY = player.GetY();
-                    
+
                     //빈공간으로 이동시
                     if (map.getFieldStatus(currX, currY) == 0)
                     {
@@ -391,7 +391,7 @@ namespace _0613_cs
 
     public class CoinTrackerMap
     {
-        private readonly string[] FIELD_STRING = { "　", "나", "ⓒ", "ㅁ", "돌", "홀", "꽉" }; 
+        private readonly string[] FIELD_STRING = { "　", "나", "ⓒ", "ㅁ", "돌", "홀", "꽉" };
 
         private int[,] field;
         private int size;
@@ -421,8 +421,8 @@ namespace _0613_cs
             for (int i = 0; i < size; i++)
             {
                 hole[i] = new CoinTrackerObject();
-                while ( field[hole[i].GetX(), hole[i].GetY()] != 0                      || 
-                        (hole[i].GetX()==(size+2)/2&& hole[i].GetY() == (size + 2) / 2)      )
+                while (field[hole[i].GetX(), hole[i].GetY()] != 0 ||
+                        (hole[i].GetX() == (size + 2) / 2 && hole[i].GetY() == (size + 2) / 2))
                 {
                     hole[i].SetX(r.Next(1, size + 1));
                     hole[i].SetY(r.Next(1, size + 1));
@@ -440,7 +440,7 @@ namespace _0613_cs
         }
         public void ModifyFieldStatus(int x, int y, int status)
         {
-            this.field[x, y] = this.field[x, y]+status;
+            this.field[x, y] = this.field[x, y] + status;
         }
 
         public int getFieldStatus(int x, int y)
@@ -455,7 +455,7 @@ namespace _0613_cs
             string line = "";
 
             //높이x너비만큼 반복
-            for (int vertical = 0; vertical < size+2; vertical++)
+            for (int vertical = 0; vertical < size + 2; vertical++)
             {
                 //행마다 초기화
                 line = "";
@@ -477,8 +477,8 @@ namespace _0613_cs
         //백버퍼->프론트버퍼 + 백버퍼 비움
         public void CopyBufferBacktoFront()
         {
-            Array.Copy(this.backBuffer, this.frontBuffer, size+2);
-            backBuffer = new string[size+2];
+            Array.Copy(this.backBuffer, this.frontBuffer, size + 2);
+            backBuffer = new string[size + 2];
         }
 
 
@@ -551,8 +551,8 @@ namespace _0613_cs
             if (axis == size + 2)
             {
                 return axis - 1;
-            } 
-            else if (axis == -1) 
+            }
+            else if (axis == -1)
             {
                 return 0;
             }
@@ -592,5 +592,4 @@ namespace _0613_cs
             Y = y;
         }
     }
-
 }

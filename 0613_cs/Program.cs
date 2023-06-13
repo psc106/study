@@ -14,8 +14,11 @@ namespace _0613_cs
 
             while (game.start())
             {
-                Console.ReadKey();
-                Console.Clear();
+                if (!game.IsRestart())
+                {
+                    Console.ReadKey();
+                    Console.Clear();
+                }
             }
         }
     }

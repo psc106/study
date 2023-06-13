@@ -13,21 +13,24 @@ namespace homework_cs
         static void Main(string[] args)
         {
 
-           /* TicTacGame hw = null;
-            while (true)
+
+            CoinTrackerGame game = new CoinTrackerGame();
+            while (game.start())
             {
-                Console.Clear();
-                hw = new TicTacGame();
-                hw.Start();
-            }*/
-
-
+                if (!game.IsRestart())
+                {
+                    Console.ReadKey();
+                    Console.Clear();
+                }
+            }
+            /*
+            Console.Clear();
             TicTacGame1 hw1 = new TicTacGame1();
             while (hw1.Start())
             {
                 Console.Clear();
                 hw1.Init();
-            }
+            }*/
         }
     }
 }
