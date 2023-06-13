@@ -7,11 +7,14 @@ using System.Threading.Tasks;
 namespace homework_cs
 {
 
+
+    //게임 매니저
     public class TicTacGame
     {
-        TicTacPlayer[] player;
-        TicTacMap map;
-        int turn = 1;   //플레이어부터 시작
+
+        private TicTacPlayer[] player;
+        private TicTacMap map;
+        private int turnPlayer = 1;   //플레이어부터 시작
 
         public TicTacGame()
         {
@@ -22,18 +25,21 @@ namespace homework_cs
         }
 
 
+        //changemap/checkmap->savebuffer->copybuffer->printmap
         public void Start()
         {
+            int turn = 1;
             Console.CursorVisible = false;
+
             map.ChangeMap(player[0].GetX(), player[0].GetY());
             map.SaveBackBuffer();
             while (true)
             {
+                Console.WriteLine();
                 map.CopyBufferBacktoFront();
                 map.PrintMap();
                 Console.WriteLine();
-
-                Console.WriteLine(player[0].GetX()+" "+player[0].GetY());
+                Console.WriteLine(player[0].GetX()+" "+player[0].GetY()+" "+turn);
 
                 int direction = 0;
                 bool isClick = false;
@@ -42,7 +48,7 @@ namespace homework_cs
                 bool isWin = false;
 
                 //플레이어 키 입력
-                if (turn == 1)
+                if (turnPlayer == 1)
                 {
                     switch (Console.ReadKey(true).Key)
                     {
@@ -83,9 +89,11 @@ namespace homework_cs
 
                     if (isClick && map.GetMapStatus(player[0].GetX(), player[0].GetY()) == 4)
                     {
-                        map.CheckMap(player[0].GetX(), player[0].GetY(), turn);
+                        map.CheckMap(player[0].GetX(), player[0].GetY(), turnPlayer);
                         map.SaveBackBuffer();
-                        turn *= -1;
+                        turnPlayer *= -1;
+                        turn += 1;
+
                         isCheck = true;
 
                     }
@@ -95,19 +103,19 @@ namespace homework_cs
                         int GetX = player[0].GetX();
                         int GetY = player[0].GetY();
 
-                        if (checkTriple(5, GetX, GetY, 2, 0))
+                        if (CheckTriple(5, GetX, GetY, 2, 0))
                         {
                             isWin = true;
                         }
-                        else if (checkTriple(6, GetX, GetY, 2, 0))
+                        else if (CheckTriple(6, GetX, GetY, 2, 0))
                         {
                             isWin = true;
                         }
-                        else if(checkTriple(3, GetX, GetY, 2, 0))
+                        else if(CheckTriple(3, GetX, GetY, 2, 0))
                         {
                             isWin = true;
                         }
-                        else if(checkTriple(1, GetX, GetY, 2, 0))
+                        else if(CheckTriple(1, GetX, GetY, 2, 0))
                         {
                             isWin = true;
                         }
@@ -123,7 +131,7 @@ namespace homework_cs
 
                 }
                 //컴퓨터
-                else if (turn == -1)
+                else if (turnPlayer == -1)
                 {
                     Random rand = new Random();
                     /*while(map.GetMapStatus(player[1].GetX(), player[1].GetY()) != 2)
@@ -140,12 +148,12 @@ namespace homework_cs
 
                         if (map.GetMapStatus(num1, num2) == 1)
                         {
-                            map.CheckMap(num1, num2, turn);
-                            turn *= -1;
-                            player[0].setAxis(1, 1);
-                            player[1].setAxis(num1, num2);
-                            map.ChangeMap(player[0].GetX(), player[0].GetY());
+                            map.CheckMap(num1, num2, turnPlayer);
+                            player[1].SetAxis(num1, num2);
                             map.SaveBackBuffer();
+                            turnPlayer *= -1;
+                            turn += 1;
+
                             break;
                         }
                     }
@@ -153,19 +161,19 @@ namespace homework_cs
                     int GetX = player[1].GetX();
                     int GetY = player[1].GetY();
 
-                    if (checkTriple(5, GetX, GetY, 2, 1))
+                    if (CheckTriple(5, GetX, GetY, 2, 1))
                     {
                         isWin = true;
                     }
-                    else if (checkTriple(6, GetX, GetY, 2, 1))
+                    else if (CheckTriple(6, GetX, GetY, 2, 1))
                     {
                         isWin = true;
                     }
-                    else if (checkTriple(3, GetX, GetY, 2, 1))
+                    else if (CheckTriple(3, GetX, GetY, 2, 1))
                     {
                         isWin = true;
                     }
-                    else if (checkTriple(1, GetX, GetY, 2, 1))
+                    else if (CheckTriple(1, GetX, GetY, 2, 1))
                     {
                         isWin = true;
                     }
@@ -178,9 +186,21 @@ namespace homework_cs
                         Console.ReadKey();
                         return;
                     }
+
+                    player[0].SetAxis(1, 1);
+                    map.ChangeMap(player[0].GetX(), player[0].GetY());
+                    map.SaveBackBuffer();
                 }
 
+                if (turn == 10)
+                {
+                    map.CopyBufferBacktoFront();
+                    map.PrintMap();
+                    Console.WriteLine("??무승부");
+                    Console.ReadKey();
 
+                    return;
+                }
 
 
                 //플레이어 변경
@@ -188,8 +208,11 @@ namespace homework_cs
 
             }
         }
-        public bool checkTriple(int direction, int x, int y, int count, int playerIndex)
+        public bool CheckTriple(int direction, int x, int y, int count, int playerIndex)
         {
+            Console.SetCursorPosition(10+x, 10+y);
+            Console.WriteLine(count+")"+x + " " + y + " " + map.GetMapStatus(x, y));
+
             if (map.GetMapStatus(x, y) != player[playerIndex].GetCheckNumber())
             {
                 return false;
@@ -226,7 +249,7 @@ namespace homework_cs
             {
                 nextY = 2;
             }
-            return checkTriple(direction, nextX, nextY, count - 1, playerIndex);
+            return CheckTriple(direction, nextX, nextY, count - 1, playerIndex);
         }
 
     }
@@ -390,7 +413,7 @@ namespace homework_cs
             return currAxis;
 
         }
-        public void setAxis(int x, int y)
+        public void SetAxis(int x, int y)
         {
             this.positionX = x;
             this.positionY = y;
