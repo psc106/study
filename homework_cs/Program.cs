@@ -14,7 +14,7 @@ namespace homework_cs
         {
 
 
-            CoinTrackerGame game = new CoinTrackerGame();
+            /*CoinTrackerGame game = new CoinTrackerGame();
             while (game.start())
             {
                 if (!game.IsRestart())
@@ -22,7 +22,7 @@ namespace homework_cs
                     Console.ReadKey();
                     Console.Clear();
                 }
-            }
+            }*/
             /*
             Console.Clear();
             TicTacGame1 hw1 = new TicTacGame1();
@@ -31,6 +31,8 @@ namespace homework_cs
                 Console.Clear();
                 hw1.Init();
             }*/
+            ShopSystem ss = new ShopSystem();
+            ss.start();
         }
     }
 }

@@ -40,9 +40,9 @@ namespace homework_cs
 
         public bool start()
         {
-            size = 1;
             if (!isRestart)
             {
+                size = 1;
                 while (size <= 4 || size > 40)
                 {
                     Console.Write("사이즈 입력(5~40) : ");
@@ -91,7 +91,7 @@ namespace homework_cs
                     map.PrintMap(!isWork);
 
                     Console.SetCursorPosition(0, size + 2);
-                    Console.WriteLine("점수 : {0}", this.score);
+                    Console.WriteLine("점수 : {0}                        ", this.score);
                     isWork = false;
                 }
 
@@ -137,7 +137,7 @@ namespace homework_cs
                     map.CopyBufferBacktoFront();
                     map.PrintMap(false);
 
-                    Console.Write("종료                  ");
+                    Console.Write("종료                                 ");
                     return false;
                 }
 
@@ -145,9 +145,10 @@ namespace homework_cs
                 {
                     isWork = true;
                     timer.Dispose();
+                    isWork = false;
 
 
-                    Console.Write("재시작중                  ");
+                    Console.Write("재시작중                             ");
                     return true;
                 }
 
@@ -161,7 +162,7 @@ namespace homework_cs
                     //빈공간으로 이동시
                     if (map.getFieldStatus(currX, currY) == 0)
                     {
-                        Console.Write("이동          ");
+                        Console.Write("이동                         ");
                         if (player.IsHole())
                         {
                             map.SetFieldStatus(beforeX, beforeY, 5);
@@ -177,7 +178,7 @@ namespace homework_cs
                     //아이템 먹기
                     else if (map.getFieldStatus(currX, currY) == 2)
                     {
-                        Console.Write("코인          ");
+                        Console.Write("코인                          ");
                         score += 1;
                         itemCount -= 1;
                         if (player.IsHole())
@@ -195,7 +196,7 @@ namespace homework_cs
                     //벽 부딫침
                     else if (map.getFieldStatus(currX, currY) == 3)
                     {
-                        Console.Write("벽            ");
+                        Console.Write("벽                             ");
                         player.SetPosition(beforeX, beforeY);
                     }
 
@@ -218,7 +219,7 @@ namespace homework_cs
                     //구멍 부딫침
                     else if (map.getFieldStatus(currX, currY) == 5)
                     {
-                        Console.Write("구멍                    ");
+                        Console.Write("구멍                           ");
                         if (player.IsHole())
                         {
                             map.SetFieldStatus(beforeX, beforeY, 5);
@@ -257,7 +258,7 @@ namespace homework_cs
 
                         if (map.getFieldStatus(nextStoneX, nextStoneY) == 0 || map.getFieldStatus(nextStoneX, nextStoneY) == 2)
                         {
-                            Console.WriteLine(" 이동               ");
+                            Console.WriteLine(" 이동                           ");
                             currStone.SetPosition(nextStoneX, nextStoneY);
                             if (player.IsHole())
                             {
@@ -279,7 +280,7 @@ namespace homework_cs
                         }
                         else if (map.getFieldStatus(nextStoneX, nextStoneY) == 5)
                         {
-                            Console.WriteLine(" 넣음               ");
+                            Console.WriteLine(" 넣음                           ");
                             currStone.SetPosition(nextStoneX, nextStoneY);
                             if (player.IsHole())
                             {
@@ -303,7 +304,7 @@ namespace homework_cs
                         }
                         else
                         {
-                            Console.WriteLine(" 막힘               ");
+                            Console.WriteLine(" 막힘                            ");
                             player.SetPosition(beforeX, beforeY);
                         }
 
@@ -331,7 +332,7 @@ namespace homework_cs
                         map.CopyBufferBacktoFront();
                         map.PrintMap(false);
 
-                        Console.WriteLine("돌승리                  ");
+                        Console.WriteLine("돌승리                                  ");
 
                         return true;
                     }
@@ -346,7 +347,7 @@ namespace homework_cs
                     map.CopyBufferBacktoFront();
                     map.PrintMap(false);
 
-                    Console.WriteLine("승리                  ");
+                    Console.WriteLine("패배?                                        ");
 
                     return true;
                 }
@@ -375,7 +376,7 @@ namespace homework_cs
                         map.CopyBufferBacktoFront();
                         map.PrintMap(isWork);
                         Console.SetCursorPosition(0, size + 2);
-                        Console.WriteLine("점수 : {0}", this.score);
+                        Console.WriteLine("점수 : {0}                         ", this.score);
 
                         return;
                     }
