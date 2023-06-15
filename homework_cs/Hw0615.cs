@@ -12,7 +12,7 @@ namespace homework_cs
     {
         enum map_str
         {
-            player=0, blank, wall, ball, hole, full
+            player = 0, blank, wall, ball, hole, full
         }
 
         SokobanMap map;
@@ -20,13 +20,15 @@ namespace homework_cs
 
         SokobanPlayer player;
         List<SokobanStone> stones;
-        
+
+        private int score;
         private int size;
         private bool isRestart;
 
         public Sokoban(int size)
         {
-            this.size = size+2;
+            this.score = 0;
+            this.size = size + 2;
             this.Init();
         }
 
@@ -49,7 +51,7 @@ namespace homework_cs
             int direction = 0;
 
             Timer stoneTimer = new Timer(this.MakeStone, this.size, 500, 1500);
-            Timer printTimer = new Timer(this.PrintMap, this.size, 500, 60);
+            Timer printTimer = new Timer(this.PrintMap, this.size, 500, 100);
 
             map.SetFieldAt(player.X, player.Y, (int)map_str.player);
 
@@ -126,7 +128,7 @@ namespace homework_cs
 
                     //빈공간으로 이동시
                     if (map.GetFieldAt(currX, currY) == (int)map_str.blank)
-                    {                       
+                    {
                         map.SetFieldAt(beforeX, beforeY, (int)map_str.blank);
                         map.SetFieldAt(currX, currY, (int)map_str.player);
                     }
@@ -148,6 +150,25 @@ namespace homework_cs
                                 currStone.Direction = direction;
                                 break;
                             }
+
+                            if (i == stones.Count)
+                            {
+                                for (int j = 1; j < map.Field.GetLength(0) - 1; j++)
+                                {
+                                    for (int k = 1; k < map.Field.GetLength(1) - 1; k++)
+                                    {
+                                        map.Field[j, k] = (int)map_str.blank;
+                                    }
+                                }
+
+                                map.Field[player.X, player.Y] = (int)map_str.player;
+
+                                for (int j = 0; j < stones.Count; j++)
+                                {
+                                    map.Field[stones[i].X, stones[i].Y] = (int)map_str.ball;
+
+                                }
+                            }
                         }
 
                         isStone = true;
@@ -156,22 +177,22 @@ namespace homework_cs
                 }
 
                 //돌 옮길시
-                if (isStone && currStone!=null)
+                if (isStone && currStone != null)
                 {
 
                     int nextStoneX = currStone.GetNextX(currX, size);
                     int nextStoneY = currStone.GetNextY(currY, size);
 
-                    if (currStone.isStop && map.GetFieldAt(nextStoneX, nextStoneY) == (int)map_str.blank)
+                    if (map.GetFieldAt(nextStoneX, nextStoneY) == (int)map_str.blank)
                     {
                         currStone.SetPosition(nextStoneX, nextStoneY);
                         map.SetFieldAt(beforeX, beforeY, (int)map_str.blank);
                         map.SetFieldAt(currX, currY, (int)map_str.player);
-                        currStone.pushTimer = new Timer(PushStone, currStone, 100, 500);
+                        if (currStone.pushTimer == null)
+                        {
+                            currStone.pushTimer = new Timer(PushStone, currStone, 100, 500);
+                        }
                         map.SetFieldAt(nextStoneX, nextStoneY, (int)map_str.ball);
-                    }
-                    else if (map.GetFieldAt(nextStoneX, nextStoneY) == (int)map_str.hole)
-                    {
                     }
                     else
                     {
@@ -191,6 +212,8 @@ namespace homework_cs
             buffer.SaveBackBuffer(map.Field);
             buffer.CopyBufferBacktoFront((int)size);
             buffer.PrintMap();
+            Console.SetCursorPosition(0, (int)size+1);
+            Console.WriteLine("점수 {0}", score);
         }
 
         public void MakeStone(Object size)
@@ -220,18 +243,17 @@ namespace homework_cs
 
         public void PushStone(Object stone)
         {
-            int[,] check = { {1,-1}, {1,2 }, {-1,-2} };
+            int[,] check = { { 1, -1 }, { 1, 2 }, { -1, -2 } };
             SokobanStone currStone = (SokobanStone)stone;
             SokobanStone checkStone1 = null;
             SokobanStone checkStone2 = null;
 
 
 
-
-            int checkCurr = stones.FindIndex(x => (x.Y == currStone.Y) && (x.X == currStone.X));
             int nextX = currStone.GetNextX(currStone.X, size);
             int nextY = currStone.GetNextY(currStone.Y, size);
-            if (nextX == 0 || nextX == size - 1||nextY == 0 || nextY == size - 1)
+            if ((nextX == 0 || nextX == size - 1 || nextY == 0 || nextY == size - 1) ||
+                map.GetFieldAt(nextX, nextY) != (int)map_str.blank)
             {
                 for (int i = 0; i < 3; i++)
                 {
@@ -250,26 +272,34 @@ namespace homework_cs
                         {
                             if (check1 > check2)
                             {
-                                map.SetFieldAt(currStone.X, currStone.Y, (int)map_str.blank);
-                                stones.RemoveAt(checkCurr);
+                                currStone.pushTimer.Dispose();
+
                                 map.SetFieldAt(checkStone1.X, checkStone1.Y, (int)map_str.blank);
                                 stones.RemoveAt(check1);
                                 map.SetFieldAt(checkStone2.X, checkStone2.Y, (int)map_str.blank);
                                 stones.RemoveAt(check2);
-                                currStone.pushTimer.Dispose();
-                                currStone.isStop = true;
+
+                                int checkCurr = stones.FindIndex(x => (x.Y == currStone.Y) && (x.X == currStone.X));
+                                map.SetFieldAt(currStone.X, currStone.Y, (int)map_str.blank);
+                                stones.RemoveAt(checkCurr);
+                                score += 1;
+
                                 return;
                             }
                             else
                             {
-                                map.SetFieldAt(currStone.X, currStone.Y, (int)map_str.blank);
-                                stones.RemoveAt(checkCurr);
+                                currStone.pushTimer.Dispose();
+
                                 map.SetFieldAt(checkStone2.X, checkStone2.Y, (int)map_str.blank);
                                 stones.RemoveAt(check2);
                                 map.SetFieldAt(checkStone1.X, checkStone1.Y, (int)map_str.blank);
                                 stones.RemoveAt(check1);
-                                currStone.pushTimer.Dispose();
-                                currStone.isStop = true;
+
+                                int checkCurr = stones.FindIndex(x => (x.Y == currStone.Y) && (x.X == currStone.X));
+                                map.SetFieldAt(currStone.X, currStone.Y, (int)map_str.blank);
+                                stones.RemoveAt(checkCurr);
+                                score += 1;
+
                                 return;
                             }
                         }
@@ -294,26 +324,34 @@ namespace homework_cs
                         {
                             if (check1 > check2)
                             {
-                                map.SetFieldAt(currStone.X, currStone.Y, (int)map_str.blank);
-                                stones.RemoveAt(checkCurr);
+                                currStone.pushTimer.Dispose();
+
                                 map.SetFieldAt(checkStone1.X, checkStone1.Y, (int)map_str.blank);
                                 stones.RemoveAt(check1);
                                 map.SetFieldAt(checkStone2.X, checkStone2.Y, (int)map_str.blank);
                                 stones.RemoveAt(check2);
-                                currStone.pushTimer.Dispose();
-                                currStone.isStop = true;
+
+                                int checkCurr = stones.FindIndex(x => (x.Y == currStone.Y) && (x.X == currStone.X));
+                                map.SetFieldAt(currStone.X, currStone.Y, (int)map_str.blank);
+                                stones.RemoveAt(checkCurr);
+                                score += 1;
+
                                 return;
                             }
                             else
                             {
-                                map.SetFieldAt(currStone.X, currStone.Y, (int)map_str.blank);
-                                stones.RemoveAt(checkCurr);
+                                currStone.pushTimer.Dispose();
+
                                 map.SetFieldAt(checkStone2.X, checkStone2.Y, (int)map_str.blank);
                                 stones.RemoveAt(check2);
                                 map.SetFieldAt(checkStone1.X, checkStone1.Y, (int)map_str.blank);
                                 stones.RemoveAt(check1);
-                                currStone.pushTimer.Dispose();
-                                currStone.isStop = true;
+
+                                int checkCurr = stones.FindIndex(x => (x.Y == currStone.Y) && (x.X == currStone.X));
+                                map.SetFieldAt(currStone.X, currStone.Y, (int)map_str.blank);
+                                stones.RemoveAt(checkCurr);
+                                score += 1;
+
                                 return;
                             }
                         }
@@ -321,92 +359,7 @@ namespace homework_cs
                     }
                 }
                 currStone.pushTimer.Dispose();
-                currStone.isStop = true;
-                return;
-            }
-
-            if (map.GetFieldAt(nextX, nextY)!=(int)map_str.blank)
-            {
-                for (int i = 0; i < 3; i++)
-                {
-                    int check1 = stones.FindIndex(x => (x.Y == currStone.Y) && (x.X == currStone.X + check[i, 0]));
-                    int check2 = stones.FindIndex(x => (x.Y == currStone.Y) && (x.X == currStone.X + check[i, 1]));
-
-                    if (check1 == -1 || check2 == -1)
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        checkStone1 = stones[check1];
-                        checkStone2 = stones[check2];
-                        if ((checkStone1.isStop) && (checkStone2.isStop))
-                        {
-                            if (check1 > check2)
-                            {
-                                map.SetFieldAt(currStone.X, currStone.Y, (int)map_str.blank);
-                                stones.RemoveAt(checkCurr);
-                                map.SetFieldAt(checkStone1.X, checkStone1.Y, (int)map_str.blank);
-                                stones.RemoveAt(check1);
-                                map.SetFieldAt(checkStone2.X, checkStone2.Y, (int)map_str.blank);
-                                stones.RemoveAt(check2);
-                                currStone.pushTimer.Dispose();
-                                currStone.isStop = true;
-                                return;
-                            }
-                            else
-                            {
-                                map.SetFieldAt(currStone.X, currStone.Y, (int)map_str.blank);
-                                stones.RemoveAt(checkCurr);
-                                map.SetFieldAt(checkStone2.X, checkStone2.Y, (int)map_str.blank);
-                                stones.RemoveAt(check2);
-                                map.SetFieldAt(checkStone1.X, checkStone1.Y, (int)map_str.blank);
-                                stones.RemoveAt(check1);
-                                currStone.pushTimer.Dispose();
-                                currStone.isStop = true;
-                                return;
-                            }
-                        }
-
-                    }
-                }
-
-                for (int i = 0; i < 3; i++)
-                {
-                    int check1 = stones.FindIndex(x => (x.X == currStone.X) && (x.Y == currStone.Y + check[i, 0]));
-                    int check2 = stones.FindIndex(x => (x.X == currStone.X) && (x.Y == currStone.Y + check[i, 1]));
-
-                    if (check1 == -1 || check2 == -1)
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        checkStone1 = stones[check1];
-                        checkStone2 = stones[check2];
-                        if ((checkStone1.isStop) && (checkStone2.isStop))
-                        {
-                            if (check1 > check2)
-                            {
-                                stones.RemoveAt(check1);
-                                stones.RemoveAt(check2);
-                                currStone.pushTimer.Dispose();
-                                currStone.isStop = true;
-                                return;
-                            }
-                            else
-                            {
-                                stones.RemoveAt(check2);
-                                stones.RemoveAt(check1);
-                                currStone.pushTimer.Dispose();
-                                currStone.isStop = true;
-                                return;
-                            }
-                        }
-
-                    }
-                }
-                currStone.pushTimer.Dispose();
+                currStone.pushTimer = null;
                 currStone.isStop = true;
                 return;
             }
@@ -417,7 +370,7 @@ namespace homework_cs
             map.SetFieldAt(currStone.X, currStone.Y, (int)map_str.ball);
         }
 
-    }    
+    }
 
     public class SokobanMap
     {
@@ -432,7 +385,8 @@ namespace homework_cs
             {
                 for (int j = 0; j < size; j++)
                 {
-                    if (i==0 || i==size-1 || j==0||j==size-1) {
+                    if (i == 0 || i == size - 1 || j == 0 || j == size - 1)
+                    {
                         Field[i, j] = 2;
                         continue;
                     }
@@ -585,7 +539,7 @@ namespace homework_cs
             }
         }
 
-        
+
 
         public int GetNextX(int x, int size)
         {
