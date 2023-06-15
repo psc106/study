@@ -73,14 +73,15 @@ namespace homework_cs
                 {
                     currList = shop.GetShopList();
                 }
+                if (!inShop && !inInventory)
+                {
+                    Console.WriteLine("상점[s]\n인벤토리[i]\n입력 : ");
+                }
 
 
                 //키 입력
                 switch (Console.ReadKey(true).Key)
                 {
-                    case ConsoleKey.Enter:
-                        break;
-
                     //커서 이동
                     case ConsoleKey.DownArrow:
                         isCursorMove = true;
@@ -95,6 +96,7 @@ namespace homework_cs
                     case ConsoleKey.S:
                         if (!inShop)
                         {
+                            inInventory = false;
                             isFirst = true;
                             cursor = 0;
                         }
@@ -104,6 +106,7 @@ namespace homework_cs
                     case ConsoleKey.I:
                         if (!inInventory)
                         {
+                            inShop = false;
                             isFirst = true;
                             cursor = 0;
                         }
@@ -111,6 +114,7 @@ namespace homework_cs
                         break;
 
                     //확인
+                    case ConsoleKey.Enter:
                     case ConsoleKey.Z:
                         yes = true;
                         break;
@@ -121,6 +125,7 @@ namespace homework_cs
 
                     //예외사항
                     default:
+                        Console.SetCursorPosition(0, 0);
                         break;
                 }
 
@@ -135,12 +140,6 @@ namespace homework_cs
                         isFirst = false;
                     }
 
-                    Console.SetCursorPosition(0, 0);
-                    Console.WriteLine("[상점]  돈:{0}                      ", player.GeyMoney());
-                    for (int i = Console.CursorLeft; i < Console.WindowWidth; i++)
-                    {
-                        Console.Write("─");
-                    }
 
                     //취소
                     if (no)
@@ -192,6 +191,13 @@ namespace homework_cs
                         }
                     }
 
+                    Console.SetCursorPosition(0, 0);
+                    Console.WriteLine("[상점]  돈:{0}                      ", player.GeyMoney());
+                    for (int i = Console.CursorLeft; i < Console.WindowWidth; i++)
+                    {
+                        Console.Write("─");
+                    }
+
                     //커서 출력
                     for (int i = 0; i < currList.Count; i++)
                     {
@@ -217,6 +223,7 @@ namespace homework_cs
                         Console.WriteLine("{0}) {1}\t{2}\t\t{3}\t{4}"
                             , ++listIndex, currItem.GetName(), currItem.GetPrice(), currItem.GetCount(), currItem.GetTip());
                     }
+                    Console.Write("이동[↑,↓] 확인/취소(z/x)");
                     for (int i = Console.CursorLeft; i < Console.WindowWidth; i++)
                     {
                         Console.Write("─");
@@ -234,14 +241,6 @@ namespace homework_cs
                         isFirst = false;
                     }
 
-                    //기본정보
-                    Console.SetCursorPosition(0, 0);
-                    Console.WriteLine("[인벤토리]  돈:{0}                      ", player.GeyMoney());
-                    for (int i = Console.CursorLeft; i < Console.WindowWidth; i++)
-                    {
-                        Console.Write("─");
-                    }
-
                     //취소
                     if (no)
                     {
@@ -255,11 +254,32 @@ namespace homework_cs
                     {
                         if (player.GetInventoryList().Count > 0)
                         {
-                            Console.SetCursorPosition(0, player.GetInventoryList().Count + 3);
-                            Console.WriteLine("{0} x{1} {2}", 
-                                player.GetInventoryListAt(cursor).GetName(), 
-                                player.GetInventoryListAt(cursor).GetCount(),
-                                player.GetInventoryListAt(cursor).GetTip());
+                            Console.SetCursorPosition(0, player.GetInventoryList().Count + 2);
+                            Console.Write("{0} 사용",
+                                 player.GetInventoryListAt(cursor).GetName());
+
+                            for (int i = Console.CursorLeft; i < Console.WindowWidth; i++)
+                            {
+                                Console.Write(" ");
+                            }
+
+                            for (int i = Console.CursorLeft; i < Console.WindowWidth; i++)
+                            {
+                                Console.Write(" ");
+                            }
+
+                            player.GetInventoryListAt(cursor).AddCount(-1);
+
+                            if (player.GetInventoryListAt(cursor).GetCount() == 0)
+                            {
+                                player.GetInventoryList().RemoveAt(cursor);
+                                cursor -= 1;
+                            }
+
+                            if (cursor <0)
+                            {
+                                cursor += 1;
+                            }
                         }
                     }
 
@@ -282,21 +302,32 @@ namespace homework_cs
                         }
                     }
 
+                    //기본정보
+                    Console.SetCursorPosition(0, 0);
+                    Console.WriteLine("[인벤토리]  돈:{0}                      ", player.GeyMoney());
+                    for (int i = Console.CursorLeft; i < Console.WindowWidth; i++)
+                    {
+                        Console.Write("─");
+                    }
+
                     //커서 출력
-                    for (int i = 0; i < player.GetInventoryList().Count; i++)
+                    if (player.GetInventoryList().Count >= 0)
                     {
-                        Console.SetCursorPosition(0, 2 + i);
-                        Console.WriteLine("　");
-                    }
-                    if (player.GetInventoryList().Count != 0)
-                    {
-                        Console.SetCursorPosition(0, 2 + cursor);
-                        Console.WriteLine("▶");
-                    }
-                    else
-                    {
-                        Console.SetCursorPosition(0, 2 + cursor);
-                        Console.WriteLine("아이템이 없습니다.");
+                        for (int i = 0; i < player.GetInventoryList().Count; i++)
+                        {
+                            Console.SetCursorPosition(0, 2 + i);
+                            Console.WriteLine("　");
+                        }
+                        if (player.GetInventoryList().Count != 0)
+                        {
+                            Console.SetCursorPosition(0, 2 + cursor);
+                            Console.WriteLine("▶");
+                        }
+                        else
+                        {
+                            Console.SetCursorPosition(0, 2 + cursor);
+                            Console.WriteLine("아이템이 없습니다.");
+                        }
                     }
 
                     //인벤 정보 출력
@@ -307,10 +338,13 @@ namespace homework_cs
                         Console.WriteLine("{0}) {1}\t{2}\t\t{3}\t{4}"
                             , ++listIndex, currItem.GetName(), currItem.GetPrice()/2, currItem.GetCount(), currItem.GetTip());
                     }
+                    Console.Write("이동[↑,↓] 확인/취소(z/x)");
+
                     for (int i = Console.CursorLeft; i < Console.WindowWidth; i++)
                     {
                         Console.Write("─");
                     }
+
                 }
             }
         }

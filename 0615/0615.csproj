@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{31C1E8F9-53DD-4EA2-A0D9-D22C232297B1}</ProjectGuid>
+    <ProjectGuid>{A0426F14-88AB-44F6-ACAC-B3002D70D57A}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>homework_cs</RootNamespace>
-    <AssemblyName>homework_cs</AssemblyName>
+    <RootNamespace>_0615</RootNamespace>
+    <AssemblyName>0615</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -43,11 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Hw0612.cs" />
-    <Compile Include="Hw0613.cs" />
-    <Compile Include="Hw0614.cs" />
-    <Compile Include="Hw0615.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
