@@ -35,15 +35,18 @@ namespace homework_cs
             /*ShopSystem ss = new ShopSystem();
             ss.start();*/
 
-            Sokoban skb;
-            int size;
+            Sokoban skb = null;
+            int size = 0;
 
-            bool isRestart = true;
-            while (isRestart)
+            bool isStart = true;
+            while (isStart)
             {
-                int.TryParse(Console.ReadLine(), out size);
-                skb = new Sokoban(size);
-                isRestart = skb.Start();
+                if (skb == null || !skb.isRestart)
+                {
+                    while (size < 5 || size >= 30) { int.TryParse(Console.ReadLine(), out size); }
+                    skb = new Sokoban(size);
+                }
+                isStart = skb.Start();
             }
         }
     }
