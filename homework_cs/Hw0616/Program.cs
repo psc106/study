@@ -1,18 +1,19 @@
-﻿using System;
+﻿using homework_cs.Hw0616;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace homework_cs
+namespace homework_0616
 {
     internal class Program
     {
 
 
-        //static void Main(string[] args)
-        //{
+        static void Main(string[] args)
+        {
            /* ConsoleKeyInfo cki;
 
             do
@@ -32,8 +33,8 @@ namespace homework_cs
                 Console.WriteLine("You pressed the '{0}' key.", cki.Key);
             } while (cki.Key != ConsoleKey.X);*/
 
-            //MiniWorldGame game = new MiniWorldGame();
-            //game.Start();
+            GameManager game = new GameManager();
+            game.Start();
 
             /*CoinTrackerGame game = new CoinTrackerGame();
             while (game.start())
@@ -69,6 +70,6 @@ namespace homework_cs
                 }
                 isStart = skb.Start();
             }*/
-        //}
+        }
     }
 }

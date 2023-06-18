@@ -47,6 +47,14 @@
     <Compile Include="Hw0613.cs" />
     <Compile Include="Hw0614.cs" />
     <Compile Include="Hw0615.cs" />
+    <Compile Include="Hw0616.cs" />
+    <Compile Include="Hw0616\GameItem.cs" />
+    <Compile Include="Hw0616\GameManager.cs" />
+    <Compile Include="Hw0616\GameMap.cs" />
+    <Compile Include="Hw0616\GameObject.cs" />
+    <Compile Include="Hw0616\GameUtility.cs" />
+    <Compile Include="Hw0616\Program.cs" />
+    <Compile Include="Hw0616\GameSystem.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

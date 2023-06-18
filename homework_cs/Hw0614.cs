@@ -10,7 +10,7 @@ using System.Xml.Linq;
 namespace homework_cs
 {
 
-    public class ShopSystem
+    public class ShopSystem_
     {
         private Dictionary<int, ShopSystemItem> ITEM_DATABASE;
         private List<ShopSystemItem> currList;
@@ -20,7 +20,7 @@ namespace homework_cs
         private bool inShop = false;
         private bool inInventory = false;
 
-        public ShopSystem()
+        public ShopSystem_()
         {
             ITEM_DATABASE = new Dictionary<int, ShopSystemItem>();
             ITEM_DATABASE.Add(1, new ShopSystemItem(1, "아이템1", "1번 아이템입니다.", 109));
