@@ -14,7 +14,6 @@ namespace homework_cs.Hw0616
     {
         public GameMap map { get; protected set; }
         public GamePlayer player;
-        public Timer printTimer;
 
         public abstract int StartThisMode();
     }
@@ -24,6 +23,7 @@ namespace homework_cs.Hw0616
     public class PortalSystem : GameSystem
     {
         private Portal[] nextPortal;
+        public Timer printTimer;
 
         public PortalSystem()
         {
@@ -180,48 +180,6 @@ namespace homework_cs.Hw0616
 
             while (true)
             {
-                //기본정보
-                Console.SetCursorPosition(0, 0);
-                Console.WriteLine("[인벤토리]  돈:{0}                      ", player.gold);
-                for (int i = Console.CursorLeft; i < Console.WindowWidth; i++)
-                {
-                    Console.Write("─");
-                }
-
-                //커서 출력
-                if (player.inventory.Count >= 0)
-                {
-                    for (int i = 0; i < player.inventory.Count; i++)
-                    {
-                        Console.SetCursorPosition(0, (int)GameMap.InfomationLine.game + i);
-                        Console.WriteLine("　");
-                    }
-                    if (player.inventory.Count != 0)
-                    {
-                        Console.SetCursorPosition(0, (int)GameMap.InfomationLine.game + cursor);
-                        Console.WriteLine("▶");
-                    }
-                    else
-                    {
-                        Console.SetCursorPosition(0, (int)GameMap.InfomationLine.game + cursor);
-                        Console.WriteLine("아이템이 없습니다.");
-                    }
-                }
-
-                //인벤 정보 출력
-                int listIndex = 0;
-                foreach (GameItem currItem in player.inventory)
-                {
-                    Console.SetCursorPosition(2, (int)GameMap.InfomationLine.status2);
-                    Console.WriteLine("{0}) {1}\t{2}\t\t{3}\t{4}"
-                        , ++listIndex, currItem.GetName(), currItem.GetPrice() / 2, currItem.GetCount(), currItem.GetTip());
-                }
-                Console.Write("이동[↑,↓] 확인/취소(z/x)");
-
-                for (int i = Console.CursorLeft; i < Console.WindowWidth; i++)
-                {
-                    Console.Write("─");
-                }
 
                 direction = 0;
                 isNo = false;
@@ -233,11 +191,13 @@ namespace homework_cs.Hw0616
                     case ConsoleKey.UpArrow:
                     case ConsoleKey.W:
                         direction = -1;
+                        isMove = true;
                         break;
 
                     case ConsoleKey.DownArrow:
                     case ConsoleKey.S:
                         direction = 1;
+                        isMove = true;
                         break;
 
                     case ConsoleKey.Z:
@@ -325,14 +285,12 @@ namespace homework_cs.Hw0616
 
         public BattleSystem(ref GamePlayer player)
         {
-            printTimer = null;
         }
 
         public override int StartThisMode()
         {
             Console.WriteLine("배틀시스템 입장");
 
-            if (printTimer != null) printTimer.Dispose();
             return 0;
         }
     }
@@ -341,14 +299,12 @@ namespace homework_cs.Hw0616
     {
         public CardSystem(ref GamePlayer player)
         {
-            printTimer = null;
         }
 
         public override int StartThisMode()
         {
             Console.WriteLine("카드시스템 입장");
 
-            if (printTimer != null) printTimer.Dispose();
             return 0;
         }
     }
@@ -375,13 +331,15 @@ namespace homework_cs.Hw0616
 
         public override int StartThisMode()
         {
-            int cursorX = 0;
-            int cursorY = 0;
-            int direction = 0;
             bool isNo = false;
+            bool isYes = false;
+            bool isQuit = false;
             bool isVerticalMove = false;
             bool isHorizenMove = false;
-            bool isYes = false;
+
+            int direction = 0;
+
+            ShopMap sMap = ((ShopMap)map);
 
             Console.Clear();
 
@@ -403,12 +361,12 @@ namespace homework_cs.Hw0616
                 }
                 if (shop.GetShopList().Count != 0)
                 {
-                    Console.SetCursorPosition(0, 2 + cursorY);
+                    Console.SetCursorPosition(0, 2 + sMap.cursorY);
                     Console.WriteLine("▶");
                 }
                 else
                 {
-                    Console.SetCursorPosition(0, 2 + cursorY);
+                    Console.SetCursorPosition(0, 2 + sMap.cursorY);
                     Console.WriteLine("아이템이 없습니다.");
                 }
 
@@ -421,16 +379,12 @@ namespace homework_cs.Hw0616
                         , ++listIndex, currItem.GetName(), currItem.GetPrice(), currItem.GetCount(), currItem.GetTip());
                 }
                 Console.Write("이동[↑,↓] 확인/취소(z/x)");
-                for (int i = Console.CursorLeft; i < Console.WindowWidth; i++)
-                {
-                    Console.Write("─");
-                }
 
                 direction = 0;
                 isNo = false;
+                isYes = false;
                 isVerticalMove = false;
                 isHorizenMove = false;
-                isYes = false;
 
                 switch (Console.ReadKey(true).Key)
                 {
@@ -458,7 +412,7 @@ namespace homework_cs.Hw0616
                         isHorizenMove = true;
                         break;
 
-                    case ConsoleKey.Y:
+                    case ConsoleKey.Z:
                         isYes = true;
                         break;
 
@@ -466,9 +420,18 @@ namespace homework_cs.Hw0616
                         isNo = true;
                         break;
 
+                    case ConsoleKey.Q:
+                        isQuit = true;
+                        break;
+
                     default:
                         direction = 0;
                         break;
+                }
+
+                if (isQuit)
+                {
+                    return 0;
                 }
 
                 //이동키
@@ -479,19 +442,41 @@ namespace homework_cs.Hw0616
                         continue;
                     }
 
-                    cursorY += direction;
-                    if (cursorY < 0)
+                    sMap.cursorY += direction;
+                    if (sMap.cursorY < 0)
                     {
-                        cursorY += currList.Count;
+                        sMap.cursorY += currList.Count;
                     }
-                    else if (cursorY >= currList.Count)
+                    else if (sMap.cursorY >= currList.Count)
                     {
-                        cursorY = 0;
+                        sMap.cursorY = 0;
+                    }
+                }
+
+                //확인(상품 구매)
+                else if (isYes)
+                {
+                    Console.SetCursorPosition(0, (int)GameMap.InfomationLine.debug);
+                    int flag = player.BuyItem(currList[sMap.cursorY]);
+                    if (flag >= 0)
+                    {
+                        Console.WriteLine("구매    ");
+                        currList[sMap.cursorY].AddCount(-1);
+
+                        Console.SetCursorPosition(0, 0);
+                        Console.WriteLine("[상점]  돈:{0}                      ", player.gold);
+                    }
+                    else if (flag == -1)
+                    {
+                        Console.WriteLine("돈없다  ");
+                    }
+                    else if (flag == -2)
+                    {
+                        Console.WriteLine("재고없다");
                     }
                 }
             }
 
-            if (printTimer != null) printTimer.Dispose();
             return 0;
 
         }

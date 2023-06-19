@@ -15,7 +15,7 @@ namespace homework_cs.Hw0616
         public int[,] field { get; protected set; }
         public enum InfomationLine
         {
-            status1 = 2, game = 40, status2 = 50, debug = 60
+            status1 = 0, game = 2, status2 = 40, debug = 50, end = 60
         }
 
         protected void Init(int empty)
@@ -106,7 +106,7 @@ namespace homework_cs.Hw0616
                 cursorPosition = 0;
 
                 //맵 정보 출력
-                if (bufferY < (int)GameMap.InfomationLine.status1)
+                if (bufferY < (int)GameMap.InfomationLine.game)
                 {
                     line = this.GetEmptyLine();
                     map[bufferY] = line;
@@ -114,7 +114,7 @@ namespace homework_cs.Hw0616
                 }
 
                 //맵 출력
-                else if (bufferY < (int)GameMap.InfomationLine.game)
+                else if (bufferY < (int)GameMap.InfomationLine.status2)
                 {
                     if (yPosition >= field.GetLength(1))
                     {
@@ -141,7 +141,7 @@ namespace homework_cs.Hw0616
                 }
 
                 //상태 출력
-                else if (bufferY < (int)GameMap.InfomationLine.status2)
+                else if (bufferY < (int)GameMap.InfomationLine.debug)
                 {
                     line = this.GetEmptyLine();
                     map[bufferY] = line;
@@ -149,7 +149,7 @@ namespace homework_cs.Hw0616
                 }
 
                 //디버그 출력
-                else if (bufferY < (int)GameMap.InfomationLine.debug)
+                else if (bufferY < (int)GameMap.InfomationLine.end)
                 {
                     line = this.GetEmptyLine();
                     map[bufferY] = line;
@@ -164,19 +164,37 @@ namespace homework_cs.Hw0616
     {
         public static int _SHOP_MAP_SIZE = 3;
         public int[][] itemSlot;
+        public int cursorX = 0;
+        public int cursorY = 0;
 
         public ShopMap(List<GameItem> shopList)
         {
             itemSlot = new int[_SHOP_MAP_SIZE][];
         }
 
-        public string[] MapToStringArray(object obj)
+        public string[] MapToStringArray(Object player)
         {
-
             string[] map = new string[GameBuffer._BUFFER_SIZE];
             string line;
             int cursorPosition = 0;
             int yPosition = 0;
+            GamePlayer gPlayer = (GamePlayer)player;
+            
+
+            //인벤 정보 출력
+            int listIndex = 0;
+            foreach (GameItem currItem in gPlayer.inventory)
+            {
+                Console.SetCursorPosition(2, (int)GameMap.InfomationLine.game + listIndex);
+                Console.WriteLine("{0}) {1}\t{2}\t\t{3}\t{4}"
+                    , ++listIndex, currItem.GetName(), currItem.GetPrice() / 2, currItem.GetCount(), currItem.GetTip());
+            }
+            Console.Write("이동[↑,↓] 확인/취소(z/x)");
+
+            for (int i = Console.CursorLeft; i < Console.WindowWidth; i++)
+            {
+                Console.Write("─");
+            }
 
             for (int bufferY = 0; bufferY < GameBuffer._BUFFER_SIZE; bufferY++)
             {
@@ -184,26 +202,67 @@ namespace homework_cs.Hw0616
                 cursorPosition = 0;
 
                 //맵 정보 출력
-                if (bufferY < (int)GameMap.InfomationLine.status1)
+                if (bufferY < (int)GameMap.InfomationLine.game)
                 {
-                    line = this.GetEmptyLine();
+                    if (bufferY == 0)
+                    {
+                        line = "[인벤토리]  돈:" + gPlayer.gold;
+                    }
+                    else
+                    {
+                        //기본정보
+                        for (int i = Console.CursorLeft; i < Console.WindowWidth; i++)
+                        {
+                            line += "─";
+                        }
+                    }
                     map[bufferY] = line;
                     continue;
                 }
 
                 //맵 출력
-                else if (bufferY < (int)GameMap.InfomationLine.game)
+                else if (bufferY < (int)GameMap.InfomationLine.status2)
                 {
-                    for (int x = 0; x < 3; x++)
+                    //커서 출력
+                    if (gPlayer.inventory.Count >= 0)
                     {
-                        if()
+                        line += "　";
+                        if (gPlayer.inventory.Count != 0)
+                        {
+                            Console.SetCursorPosition(0, (int)GameMap.InfomationLine.game + cursorPosition);
+                            Console.WriteLine("▶");
+                        }
+                        else
+                        {
+                            Console.SetCursorPosition(0, (int)GameMap.InfomationLine.game + cursorPosition);
+                            Console.WriteLine("아이템이 없습니다.");
+                        }
+                    }
+
+                    if (yPosition >= field.GetLength(1))
+                    {
+                        line = this.GetEmptyLine();
+                        map[bufferY] = line;
+                        continue;
+                    }
+                    for (int x = 0; x < field.GetLength(1); x++)
+                    {
+                        if (field[yPosition, x] < DataManager._PORTAL_STRING.Length)
+                        {
+                            line += (" " + DataManager._PORTAL_STRING[field[yPosition, x]]);
+                        }
+                        else
+                        {
+                            //line += (" " + DataManager._PLAYER_STRING[]);
+                        }
+                        cursorPosition += 3;
                     }
                     map[bufferY] = line;
                     continue;
                 }
 
                 //상태 출력
-                else if (bufferY < (int)GameMap.InfomationLine.status2)
+                else if (bufferY < (int)GameMap.InfomationLine.debug)
                 {
                     line = this.GetEmptyLine();
                     map[bufferY] = line;
@@ -211,7 +270,7 @@ namespace homework_cs.Hw0616
                 }
 
                 //디버그 출력
-                else if (bufferY < (int)GameMap.InfomationLine.debug)
+                else if (bufferY < (int)GameMap.InfomationLine.end)
                 {
                     line = this.GetEmptyLine();
                     map[bufferY] = line;
@@ -220,6 +279,7 @@ namespace homework_cs.Hw0616
             }
             return map;
         }
+
     }
 
     public class BattleMap : GameMap

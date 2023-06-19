@@ -58,8 +58,6 @@ namespace _0616
                             break;
                         }
                     }
-                    int[] tmp = new int[map.GetLength(0)];
-                    Array.Copy();
                 }
 
                 if ((map[nextY, nextX] == 0 || map[nextY, nextX] == map[vertical, horizen]))
