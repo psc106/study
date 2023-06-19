@@ -12,9 +12,6 @@ namespace _0619.Card
 
         private Card[] playerDeck;
         private Card[] computerDeck;
-        private bool[] playerDeckFlag;
-        private bool[] computerDeckFlag;
-
         enum ranking
         {
             TOP = 0, ONE, TWO, TRI, STR, FLUSH, FULL, FOUR, STFL, ROYAL
@@ -31,21 +28,10 @@ namespace _0619.Card
             mainDeck = new Card[52];
             playerDeck = new Card[5];
             computerDeck = new Card[7];
-            playerDeckFlag = new bool[5];
-            computerDeckFlag = new bool[7];
 
             for (int i = 0; i < mainDeck.Length; i++)
             {
                 mainDeck[i] = new Card(i);
-            }
-
-            for (int i = 0; i < playerDeckFlag.Length; i++)
-            {
-                playerDeckFlag[i] = false;
-            }
-            for (int i = 0; i < computerDeckFlag.Length; i++)
-            {
-                computerDeckFlag[i] = false;
             }
         }
 
@@ -59,6 +45,7 @@ namespace _0619.Card
 
         public void start()
         {
+            Print p = new Print();
             //덱 탑 위치
             int currPos = 0;
 
@@ -66,19 +53,20 @@ namespace _0619.Card
             {
                 computerDeck[i] = mainDeck[currPos];
                 currPos += 1;
-                Console.Write(computerDeck[i].GetCardPattern() + computerDeck[i].GetCardNumber() + " ");
             }
-            Console.WriteLine();
 
             for (int i = 0; i < 5; i++)
             {
                 playerDeck[i] = mainDeck[currPos];
                 currPos += 1;
-                Console.Write(playerDeck[i].GetCardPattern() + playerDeck[i].GetCardNumber() + " ");
             }
-            Console.WriteLine();
 
-            int computerRank = CheckRank(computerDeck);
+            int computerRank = CheckRank(ref computerDeck);
+
+            p.PrintComDeck(computerDeck.SortNumber_2Start());
+
+            p.PrintPlayerDeck(playerDeck);
+
 
             int changeIndex;
             int.TryParse(Console.ReadLine(), out changeIndex);
@@ -87,11 +75,8 @@ namespace _0619.Card
             {
                 playerDeck[changeIndex-1] = mainDeck[currPos];
                 currPos += 1;
-                for (int i = 0; i < 5; i++)
-                {
-                    Console.Write(playerDeck[i].GetCardPattern() + playerDeck[i].GetCardNumber() + " ");
-                }
             }
+            p.PrintPlayerDeck(playerDeck);
 
 
             int.TryParse(Console.ReadLine(), out changeIndex);
@@ -100,13 +85,10 @@ namespace _0619.Card
             {
                 playerDeck[changeIndex-1] = mainDeck[currPos];
                 currPos += 1;
-                for (int i = 0; i < 5; i++)
-                {
-                    Console.Write(playerDeck[i].GetCardPattern() + playerDeck[i].GetCardNumber() + " ");
-                }
             }
+            p.PrintPlayerDeck(playerDeck);
 
-            int playerRank = CheckRank(playerDeck);
+            int playerRank = CheckRank(ref playerDeck);
 
 
             if (playerRank > computerRank)
@@ -123,7 +105,7 @@ namespace _0619.Card
             }
         }
 
-        public int CheckRank(Card[] deck)
+        public int CheckRank(ref Card[] deck)
         {
 
             Card[] check1 = deck.SortPattern();
@@ -131,48 +113,66 @@ namespace _0619.Card
 
             if (IsRoyal(check1))
             {
+                deck.SortPattern(null);
+                IsRoyal(deck);
                 Console.WriteLine("로얄");
                 return 10;
             }
 
             else if (IsStraightFlush(check2))
             {
+                deck.SortNumber_2Start(null);
+                IsStraightFlush(deck);
                 Console.WriteLine("스플");
                 return 9;
             }
 
             else if (IsFourCard(check2))
             {
+                deck.SortNumber_2Start(null);
+                IsFourCard(deck);
                 Console.WriteLine("포");
                 return 8;
             }
             else if (IsFullHouse(check2))
             {
+                deck.SortNumber_2Start(null);
+                IsFullHouse(deck);
                 Console.WriteLine("풀");
                 return 7;
             }
             else if (IsFlush(check1))
             {
+                deck.SortPattern(null);
+                IsFlush(deck);
                 Console.WriteLine("플");
                 return 6;
             }
             else if (IsStraight(check2))
             {
+                deck.SortNumber_2Start(null);
+                IsStraight(deck);
                 Console.WriteLine("스트");
                 return 5;
             }
             else if (IsTriple(check2))
             {
+                deck.SortNumber_2Start(null);
+                IsTriple(deck);
                 Console.WriteLine("트리플");
                 return 4;
             }
             else if (IsTwoPair(check2))
             {
+                deck.SortNumber_2Start(null);
+                IsTwoPair(deck);
                 Console.WriteLine("투페");
                 return 3;
             }
             else if (IsOnePair(check2))
             {
+                deck.SortNumber_2Start(null);
+                IsOnePair(deck);
                 Console.WriteLine("원페");
                 return 2;
             }
@@ -181,6 +181,8 @@ namespace _0619.Card
                 Console.WriteLine("탑?");
                 return 1;
             }
+
+
         }
 
         public bool IsRoyal(Card[] deck)
@@ -194,10 +196,12 @@ namespace _0619.Card
                 arr = new Dictionary<int, int>();
                 count = 0;
                 int num = deck[i].GetCardNumberNum();
+                int pattern = deck[i].GetCardPatternNum();
                 for (int j = i + 1; j <= i + 4 + i; j++)
                 {
 
                     if (j >= deck.Length) { return false; }
+
 
                     if (num == deck[j].GetCardNumberNum())
                     {
@@ -385,7 +389,7 @@ namespace _0619.Card
                 }
                 if (sameCount == 2)
                 {
-                    for (int i = 0; i < deck.Length; i++)
+                    for (int i = 0; i < deck.Length-1; i++)
                     {
                         if (number != deck[i].GetCardNumberNum() && deck[i].GetCardNumberNum() == deck[i + 1].GetCardNumberNum())
                         {
@@ -614,6 +618,68 @@ namespace _0619.Card
             }
 
             return copyArr;
+        }
+        public static void SortPattern(this Card[] copyArr, Object obj)
+        {
+            int min = 0;
+
+            for (int i = 0; i < copyArr.Length - 1; i++)
+            {
+                min = i;
+                for (int j = i + 1; j < copyArr.Length; j++)
+                {
+                    int currPattern = copyArr[j].cardNumber / 13;
+                    int currNumber = copyArr[j].cardNumber % 13;
+
+                    if (copyArr[min].GetCardPatternNum() > currPattern)
+                    {
+                        min = j;
+                    }
+                    else if (copyArr[min].GetCardPatternNum() == currPattern)
+                    {
+                        if (copyArr[min].GetCardNumberNum() > currNumber)
+                        {
+                            min = j;
+                        }
+                    }
+                }
+                if (i != min)
+                {
+                    Utility.Swap(copyArr, min, i);
+                }
+            }
+        }
+
+        public static void SortNumber_2Start(this Card[] copyArr, Object obj)
+        {
+            int min = 0;
+
+            for (int i = 0; i < copyArr.Length - 1; i++)
+            {
+                min = i;
+                for (int j = i + 1; j < copyArr.Length; j++)
+                {
+                    int currPattern = copyArr[j].cardNumber / 13;
+                    int currNumber = copyArr[j].cardNumber % 13;
+
+                    if (copyArr[min].GetCardNumberNum() > currNumber)
+                    {
+                        min = j;
+                    }
+                    else if (copyArr[min].GetCardNumberNum() == currNumber)
+                    {
+                        if (copyArr[min].GetCardPatternNum() > currPattern)
+                        {
+                            min = j;
+                        }
+                    }
+                }
+                if (i != min)
+                {
+                    Utility.Swap(copyArr, min, i);
+                }
+            }
+
         }
 
     }
