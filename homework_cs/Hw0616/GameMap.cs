@@ -194,26 +194,10 @@ namespace homework_cs.Hw0616
                 //맵 출력
                 else if (bufferY < (int)GameMap.InfomationLine.game)
                 {
-                    if (yPosition >= field.GetLength(1))
+                    for (int x = 0; x < 3; x++)
                     {
-                        line = this.GetEmptyLine();
-                        map[bufferY] = line;
-                        continue;
+                        if()
                     }
-                    for (int x = 0; x < field.GetLength(1); x++)
-                    {
-                        if (field[yPosition, x] < DataManager._PORTAL_STRING.Length)
-                        {
-                            line += (" " + DataManager._PORTAL_STRING[field[yPosition, x]]);
-                        }
-                        else
-                        {
-                            line += (" " + DataManager._PLAYER_STRING[(int)direction]);
-                        }
-                        cursorPosition += 3;
-                    }
-                    yPosition += 1;
-                    line = line + this.GetEmptyLine(cursorPosition);
                     map[bufferY] = line;
                     continue;
                 }
