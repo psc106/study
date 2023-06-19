@@ -11,7 +11,6 @@ namespace homework_cs.Hw0616
     {
         GameSystem system;
 
-        GameMap map;
         GameBuffer buffer;
         GamePlayer player;
 
@@ -38,14 +37,12 @@ namespace homework_cs.Hw0616
             player = new GamePlayer(5, 5, 0);
             buffer = new GameBuffer();
 
-            map = null;
         }
 
         public void Start()
         {
-            bool isMove = false;
-            int direction = 0;
             player = new GamePlayer(5, 5, 0);
+            GameMap map;
 
             while (true)
             {
@@ -76,11 +73,13 @@ namespace homework_cs.Hw0616
                     system = new BattleSystem(ref player);
                 }
 
-                map = system.map;
-                while (system.printTimer != null) { Console.Clear(); }
 
-                system.printTimer = new Timer(PrintMap, map, 100, 100);
+                map = system.map;
+                Console.Clear();
+                ((PortalSystem)system).printTimer = new Timer(PrintMap, map, 100, 100);
+
                 mode = system.StartThisMode();
+                Thread.Sleep(100);
             }
         }
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -54,7 +55,7 @@ namespace homework_cs.Hw0616
             this.Y = y;
             this.direction = dir;
             this.objectID = 5;
-            this.gold = 0;
+            this.gold = 1000;
             this.inventory = new List<GameItem>();
         }
 
@@ -64,7 +65,38 @@ namespace homework_cs.Hw0616
             this.Y += AXIS_Y[this.direction];
         }
 
+        public int BuyItem(GameItem item)
+        {
+            if (item.GetCount() <= 0)
+            {
+                return -2;
+            }
+
+            if (item.GetPrice() > gold)
+            {
+                return -1;
+            }
+
+            GameItem tmp = new GameItem(item);
+            tmp.SetCount(1);
+
+            int itemIndex = inventory.FindIndex(x => x.GetNumber() == tmp.GetNumber());
+
+
+            if (itemIndex < 0)
+            {
+                inventory.Add(tmp);
+            }
+            else
+            {
+                inventory[itemIndex].AddCount(1);
+            }
+
+            gold -= item.GetPrice();
+            return 0;
+        }
     }
+
 
     public class GameEnemy : GameMoveObject
     {
