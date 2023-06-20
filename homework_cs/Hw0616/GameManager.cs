@@ -53,6 +53,9 @@ namespace homework_cs.Hw0616
                 if (mode == 0)
                 {
                     system = new PortalSystem(ref player);
+                    map = system.map;
+                    Console.Clear();
+                    ((PortalSystem)system).printTimer = new Timer(PrintMap, map, 100, 100);
                 }
 
 
@@ -74,9 +77,6 @@ namespace homework_cs.Hw0616
                 }
 
 
-                map = system.map;
-                Console.Clear();
-                ((PortalSystem)system).printTimer = new Timer(PrintMap, map, 100, 100);
 
                 mode = system.StartThisMode();
                 Thread.Sleep(100);
