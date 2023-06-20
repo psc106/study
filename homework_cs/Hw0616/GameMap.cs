@@ -257,8 +257,6 @@ namespace homework_cs.Hw0616
                         }
                         cursorPosition += 3;
                     }
-                    yPosition += 1;
-                    line = line + this.GetEmptyLine(cursorPosition);
                     map[bufferY] = line;
                     continue;
                 }
