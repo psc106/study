@@ -55,7 +55,7 @@
     <Compile Include="Hw0616\GameUtility.cs" />
     <Compile Include="Hw0616\Program.cs" />
     <Compile Include="Hw0616\GameSystem.cs" />
-    <Compile Include="Hw0620\Main.cs" />
+    <Compile Include="Hw0620\Game.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
