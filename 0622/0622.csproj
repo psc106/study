@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{31C1E8F9-53DD-4EA2-A0D9-D22C232297B1}</ProjectGuid>
+    <ProjectGuid>{E89957C1-8987-4B3B-8325-0225BD5592EA}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>homework_cs</RootNamespace>
-    <AssemblyName>homework_cs</AssemblyName>
+    <RootNamespace>_0622</RootNamespace>
+    <AssemblyName>0622</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -43,30 +43,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Hw0612.cs" />
-    <Compile Include="Hw0613.cs" />
-    <Compile Include="Hw0614.cs" />
-    <Compile Include="Hw0615.cs" />
-    <Compile Include="Hw0616.cs" />
-    <Compile Include="Hw0616\GameItem.cs" />
-    <Compile Include="Hw0616\GameManager.cs" />
-    <Compile Include="Hw0616\GameMap.cs" />
-    <Compile Include="Hw0616\GameObject.cs" />
-    <Compile Include="Hw0616\GameUtility.cs" />
-    <Compile Include="Hw0616\Program.cs" />
-    <Compile Include="Hw0616\GameSystem.cs" />
-    <Compile Include="Hw0620\Algorithm.cs" />
-    <Compile Include="Hw0620\Game.cs" />
-    <Compile Include="Hw0616\IClickable.cs" />
-    <Compile Include="Hw0620\Map.cs" />
-    <Compile Include="Hw0620\MyObject.cs" />
-    <Compile Include="Hw0620\Utility.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
