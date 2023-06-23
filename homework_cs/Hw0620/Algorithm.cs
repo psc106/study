@@ -112,14 +112,14 @@ namespace homework_cs.Hw0620
         {
             List<Location> list = new List<Location>();
 
-            if (y!=0 &&( Utility.currRoom.roomInfomation[y - 1,x] == 0 || Utility.currRoom.roomInfomation[y - 1, x] == 1))
+            if (y!=0 && Utility.currRoom.roomInfomation[y - 1,x] != 2)
             {
                 Location node = openList.Find(l => l.X == x && l.Y == y - 1);
                 if (node == null) list.Add(new Location() { X = x, Y = y - 1 });
                 else list.Add(node);
             }
 
-            if (y != Room.ROOM_SIZE-1 && (Utility.currRoom.roomInfomation[y + 1, x] == 0 || Utility.currRoom.roomInfomation[y + 1, x] == 1))
+            if (y != Room.ROOM_SIZE-1 && Utility.currRoom.roomInfomation[y + 1, x] != 2)
 
             {
                 Location node = openList.Find(l => l.X == x && l.Y == y + 1);
@@ -127,13 +127,13 @@ namespace homework_cs.Hw0620
                 else list.Add(node);
             }
 
-            if (x != 0 && (Utility.currRoom.roomInfomation[y, x-1] == 0 || Utility.currRoom.roomInfomation[y, x-1] == 1))
+            if (x != 0 && Utility.currRoom.roomInfomation[y , x-1] != 2)
             {
                 Location node = openList.Find(l => l.X == x - 1 && l.Y == y);
                 if (node == null) list.Add(new Location() { X = x - 1, Y = y });
                 else list.Add(node);
             }
-            if (x != Room.ROOM_SIZE - 1 && (Utility.currRoom.roomInfomation[y, x + 1] == 0 || Utility.currRoom.roomInfomation[y, x + 1] == 1))
+            if (x != Room.ROOM_SIZE - 1 && Utility.currRoom.roomInfomation[y , x+1] != 2)
             {
                 Location node = openList.Find(l => l.X == x + 1 && l.Y == y);
                 if (node == null) list.Add(new Location() { X = x + 1, Y = y });

@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace homework_cs.Hw0620
 {
@@ -23,8 +22,31 @@ namespace homework_cs.Hw0620
 
     }
 
+    public class MyEffect : MyObject
+    {
+        public int type;
+        public static readonly string[] ATTACK_STRING = { "／", "〃", "＋" };
+
+        public MyEffect() 
+        { 
+        }
+        public MyEffect(int x, int y, int type)
+        {
+            this.X = x;
+            this.Y = y;
+            this.type = type;
+
+            //-1 일 경우 비활성화
+            if (x < 0 || y < 0 || x >= Room.ROOM_SIZE || y >= Room.ROOM_SIZE)
+            {
+                this.type = -1;
+            }
+        }
+    }
+
     public class MyMoveObject : MyObject
     {
+        public int ID;
         public bool isLive;
 
         protected int[] AXIS_X = { 1, -1, 0, 0, 0,0 };
@@ -42,38 +64,43 @@ namespace homework_cs.Hw0620
             return Y + AXIS_Y[direction];
         }
 
-        public void MoveAndHold(int direction, int XSize, int YSize)
+        public bool MoveAndHold(int direction, int XSize, int YSize)
         {
             X += AXIS_X[direction];
             Y += AXIS_Y[direction];
 
-            HoldX(XSize);
-            HoldY(YSize);
+            return HoldX(XSize) || HoldY(YSize);
         }
 
 
-        public void HoldX(int XSize)
+        public bool HoldX(int XSize)
         {
             if (X < 0)
             {
                 X = 0;
+                return true;
             }
             else if (X >= XSize)
             {
                 X = XSize - 1;
+                return true;
             }
+            return false;
 
         }
-        public void HoldY(int YSize)
+        public bool HoldY(int YSize)
         {
             if (Y < 0)
             {
                 Y = 0;
+                return true;
             }
             else if (Y >= YSize)
             {
                 Y = YSize - 1;
+                return true;
             }
+            return false;
         }
 
         public void HoldXY(ref int x, ref int y, int sizeX, int sizeY)
@@ -117,22 +144,26 @@ namespace homework_cs.Hw0620
         }
     }
 
+    //플레이어 아이디는 0이다
     public class Player : MyMoveObject
     {
         public Timer attackTimer;
 
         public int score;
         public bool isCoolTime;
+        public int weapon;
 
         public Player() { }
         public Player(int x, int y)
         {
+            ID = 0;
             isCoolTime = false;
             isLive = true;
             X = x;
             Y = y;
             score = 0;
             hitPoint = 3;
+            weapon = 1;
 
         }
 
@@ -144,10 +175,10 @@ namespace homework_cs.Hw0620
 
     }
 
+    //npc id는 음수다
     public class NonPlayableCharacter : MyMoveObject
     {
         public Timer walkTimer;
-        public int npcID;
 
         public NonPlayableCharacter() { }
         public NonPlayableCharacter(int x, int y)
@@ -156,7 +187,8 @@ namespace homework_cs.Hw0620
             X = x;
             Y = y;
             hitPoint = 1;
-            npcID = -1;
+
+            ID = -1;
         }
         public NonPlayableCharacter(int x, int y, int id)
         {
@@ -164,7 +196,7 @@ namespace homework_cs.Hw0620
             X = x;
             Y = y;
             hitPoint = 20;
-            npcID = id;
+            ID = id;
         }
 
         public void WalkTimer(object obj)
@@ -179,8 +211,10 @@ namespace homework_cs.Hw0620
         }
     }
 
+    //몬스터 아이디는 양수
     public class Enemy : MyMoveObject
     {
+        static public int EnemyHitPointMAX = 2;
         public Timer enemyMoveTimer;
 
         public int randMoveCount;
@@ -191,7 +225,8 @@ namespace homework_cs.Hw0620
 
         public Enemy(int x, int y)
         {
-            hitPoint = 2;
+            ID = 1;
+            hitPoint = EnemyHitPointMAX;
             X = x;
             Y = y;
             isLive = false;
@@ -201,10 +236,26 @@ namespace homework_cs.Hw0620
 
             StartTimer();
         }
+        public Enemy(int x, int y, int ID)
+        {
+            this.ID = ID;
+            hitPoint = EnemyHitPointMAX;
+            X = x;
+            Y = y;
+            isLive = false;
+            randMoveCount = 0;
+            playerChange = true; 
+            path = new List<Location>();
+
+            StartTimer();
+        }
         public void StartTimer()
         {
-            enemyMoveTimer = new Timer(MoveTimer, null, 3000, 600);
+            enemyMoveTimer = new Timer(MoveTimer, null, 3000, 600-(200*(EnemyHitPointMAX-hitPoint)));
+                       
+
         }
+
 
         public void MoveTimer(object obj)
         {
@@ -236,109 +287,112 @@ namespace homework_cs.Hw0620
 
             Player player = Utility.player;
 
+            #region 안쓰는 몬스터 이동 알고리즘
             /*
-                        int nextX = this.X;
-                        int nextY = this.Y;
+            int nextX = this.X;
+            int nextY = this.Y;
 
-                        if (randMoveCount > 0)
-                        {
-                            nextX = this.X + AXIS_X[Utility.random.Next(4)];
-                            nextY = this.Y + AXIS_Y[Utility.random.Next(4)];
+            if (randMoveCount > 0)
+            {
+                nextX = this.X + AXIS_X[Utility.random.Next(4)];
+                nextY = this.Y + AXIS_Y[Utility.random.Next(4)];
 
-                            nextX = HoldX(nextX, Room.ROOM_SIZE);
-                            nextY = HoldY(nextY, Room.ROOM_SIZE);
+                nextX = HoldX(nextX, Room.ROOM_SIZE);
+                nextY = HoldY(nextY, Room.ROOM_SIZE);
 
-                            if (Utility.currRoom.GetElementAt(nextX, nextY) != 2 && Utility.currRoom.FindEnemiesAt(nextX, nextY) == null)
-                            {
-                                this.X = nextX;
-                                this.Y = nextY;
-                            }
+                if (Utility.currRoom.GetElementAt(nextX, nextY) != 2 && Utility.currRoom.FindEnemiesAt(nextX, nextY) == null)
+                {
+                    this.X = nextX;
+                    this.Y = nextY;
+                }
 
-                            nextX = this.X + AXIS_X[Utility.random.Next(4)];
-                            nextY = this.Y + AXIS_Y[Utility.random.Next(4)];
+                nextX = this.X + AXIS_X[Utility.random.Next(4)];
+                nextY = this.Y + AXIS_Y[Utility.random.Next(4)];
 
-                            nextX = HoldX(nextX, Room.ROOM_SIZE);
-                            nextY = HoldY(nextY, Room.ROOM_SIZE);
+                nextX = HoldX(nextX, Room.ROOM_SIZE);
+                nextY = HoldY(nextY, Room.ROOM_SIZE);
 
-                            if (Utility.currRoom.GetElementAt(nextX, nextY) != 2 && Utility.currRoom.FindEnemiesAt(nextX, nextY) == null)
-                            {
-                                this.X = nextX;
-                                this.Y = nextY;
-                            }
+                if (Utility.currRoom.GetElementAt(nextX, nextY) != 2 && Utility.currRoom.FindEnemiesAt(nextX, nextY) == null)
+                {
+                    this.X = nextX;
+                    this.Y = nextY;
+                }
 
-                            randMoveCount -= 1;
-                        }
+                randMoveCount -= 1;
+            }
 
-                        if (Utility.random.Next(2) % 2 == 0)
-                        {
-                            if (player.X < this.X)
-                            {
-                                nextX = this.X - 1;
-                            }
-                            else if (player.X > this.X)
-                            {
-                                nextX = this.X + 1;
-                            }
-                            else
-                            {
-                                if (player.Y < this.Y)
-                                {
-                                    nextY = this.Y - 1;
-                                }
-                                else if (player.Y > this.Y)
-                                {
-                                    nextY = this.Y + 1;
-                                }
-                            }
+            if (Utility.random.Next(2) % 2 == 0)
+            {
+                if (player.X < this.X)
+                {
+                    nextX = this.X - 1;
+                }
+                else if (player.X > this.X)
+                {
+                    nextX = this.X + 1;
+                }
+                else
+                {
+                    if (player.Y < this.Y)
+                    {
+                        nextY = this.Y - 1;
+                    }
+                    else if (player.Y > this.Y)
+                    {
+                        nextY = this.Y + 1;
+                    }
+                }
 
-                            nextX = HoldX(nextX, Room.ROOM_SIZE);
-                            nextY = HoldY(nextY, Room.ROOM_SIZE);
-                        }
-                        else
-                        {
-                            if (player.Y < this.Y)
-                            {
-                                nextY = this.Y - 1;
-                            }
-                            else if (player.Y > this.Y)
-                            {
-                                nextY = this.Y + 1;
-                            }
-                            else
-                            {
-                                if (player.X < this.X)
-                                {
-                                    nextX = this.X - 1;
-                                }
-                                else if (player.X > this.X)
-                                {
-                                    nextX = this.X + 1;
-                                }
-                            }
-                            nextX = HoldX(nextX, Room.ROOM_SIZE);
-                            nextY = HoldY(nextY, Room.ROOM_SIZE);
-                        }
+                nextX = HoldX(nextX, Room.ROOM_SIZE);
+                nextY = HoldY(nextY, Room.ROOM_SIZE);
+            }
+            else
+            {
+                if (player.Y < this.Y)
+                {
+                    nextY = this.Y - 1;
+                }
+                else if (player.Y > this.Y)
+                {
+                    nextY = this.Y + 1;
+                }
+                else
+                {
+                    if (player.X < this.X)
+                    {
+                        nextX = this.X - 1;
+                    }
+                    else if (player.X > this.X)
+                    {
+                        nextX = this.X + 1;
+                    }
+                }
+                nextX = HoldX(nextX, Room.ROOM_SIZE);
+                nextY = HoldY(nextY, Room.ROOM_SIZE);
+            }
 
-                        if (Utility.currRoom.GetElementAt(nextX, nextY) != 2 && Utility.currRoom.FindEnemiesAt(nextX, nextY) == null)
-                        {
-                            this.X = nextX;
-                            this.Y = nextY;
-                        }
-                        else
-                        {
-                            randMoveCount += 2;
-                        }*/
+            if (Utility.currRoom.GetElementAt(nextX, nextY) != 2 && Utility.currRoom.FindEnemiesAt(nextX, nextY) == null)
+            {
+                this.X = nextX;
+                this.Y = nextY;
+            }
+            else
+            {
+                randMoveCount += 2;
+            }*/
+            #endregion
 
             if (player.X == this.X && player.Y == this.Y)
             {
                 player.hitPoint -= 1;
+                enemyMoveTimer.Dispose();
                 if (player.hitPoint == 0)
                 {
                     player.isLive = false;
-                    enemyMoveTimer.Dispose();
+                    Utility.currRoom.enemies.RemoveAll(x => x.X == this.X && x.Y == this.Y);
                     return;
                 }
-
+                Utility.currRoom.enemies.RemoveAll(x => x.X == this.X && x.Y == this.Y);
             }
         }
 

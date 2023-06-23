@@ -15,7 +15,7 @@ namespace homework_cs.Hw0620
    
     public class Game
     {
-        MyObject AttackEffect;
+        List<MyEffect> AttackEffect;
         string[] line;
         MyBuffer buffer;
         Map map;
@@ -32,6 +32,7 @@ namespace homework_cs.Hw0620
             line = new string[50];
             buffer = new MyBuffer();
             map = new Map(5);
+            AttackEffect = new List<MyEffect>();
         }
 
         public void Start()
@@ -73,7 +74,7 @@ namespace homework_cs.Hw0620
                 if (!isStun)
                 {
 
-                    switch (Console.ReadKey(true).Key)
+                    switch (Console.ReadKey(false).Key)
                     {
                         case ConsoleKey.RightArrow:
                             isMove = true;
@@ -128,7 +129,7 @@ namespace homework_cs.Hw0620
                 {
                     int beforeX = Utility.player.X;
                     int beforeY = Utility.player.Y;
-                    Utility.player.MoveAndHold(direction, Room.ROOM_SIZE, Room.ROOM_SIZE);
+                    bool isWall = Utility.player.MoveAndHold(direction, Room.ROOM_SIZE, Room.ROOM_SIZE);
 
                     int currX = Utility.player.X;
                     int currY = Utility.player.Y;
@@ -137,16 +138,24 @@ namespace homework_cs.Hw0620
                     //빈칸으로 이동
                     if (Utility.currRoom.roomInfomation[currY, currX] == 0)
                     {
-                        Utility.player.score += 1;
+                        if (!isWall)
+                        {
+                            Utility.player.score += 1;
+
+                        }
                     }
+
                     //수풀로 이동
                     if (Utility.currRoom.roomInfomation[currY, currX] == 1)
                     {
-                        Utility.player.score += 3;
-                        if (Utility.random.Next(1, 101) <= 36)
+                        if (!isWall)
                         {
-                            direction = 4;
-                            isStun = true;
+                            Utility.player.score += 2;
+                            if (Utility.random.Next(1, 101) <= 20)
+                            {
+                                direction = 4;
+                                isStun = true;
+                            }
                         }
                     }
                     //벽으로 이동
@@ -154,79 +163,82 @@ namespace homework_cs.Hw0620
                     {
                         Utility.player.X = beforeX;
                         Utility.player.Y = beforeY;
-
                     }
                     //텔레포트로 이동
                     else if (Utility.currRoom.roomInfomation[currY, currX] == 3)
                     {
-                        for (int i = 0; i < 4; i++)
+                        if (Utility.player.score >= 10)
                         {
-                            if (Utility.currRoom.portal[i] == null) { continue; }
-
-
-                            if (currX == Utility.currRoom.portal[i].X && currY == Utility.currRoom.portal[i].Y)
+                            for (int i = 0; i < 4; i++)
                             {
-                                switch (i)
+                                if (Utility.currRoom.portal[i] == null) { continue; }
+
+
+                                if (currX == Utility.currRoom.portal[i].X && currY == Utility.currRoom.portal[i].Y)
                                 {
-                                    case 0:
-                                        currFieldX += 1;
-                                        break;
-                                    case 1:
-                                        currFieldX -= 1;
+                                    switch (i)
+                                    {
+                                        case 0:
+                                            currFieldX += 1;
+                                            break;
+                                        case 1:
+                                            currFieldX -= 1;
 
-                                        break;
-                                    case 2:
-                                        currFieldY -= 1;
+                                            break;
+                                        case 2:
+                                            currFieldY -= 1;
 
-                                        break;
-                                    case 3:
-                                        currFieldY += 1;
+                                            break;
+                                        case 3:
+                                            currFieldY += 1;
 
-                                        break;
+                                            break;
+                                    }
+                                    Utility.player.Teleport(Room.ROOM_SIZE, Room.ROOM_SIZE);
+                                    Utility.player.score -= 10;
+
+                                    Utility.currRoom.isCurrRoom = false;
+                                    Utility.currRoom.StopEnemies();
+                                    Utility.currRoom.StopNPC();
+                                    if (Utility.currRoom.enemyTimer != null)
+                                    {
+                                        Utility.currRoom.enemyTimer.Dispose();
+                                    }
+
+                                    //Utility.currRoom.enemyTimer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
+
+                                    Utility.currRoom = map.field[currFieldY, currFieldX];
+                                    if (Utility.currRoom.type == 0)
+                                    {
+                                        Utility.currRoom.PlayEnemies();
+                                        Utility.currRoom.PlayNPC();
+                                        Utility.currRoom.enemyTimer = new Timer(Utility.currRoom.CreateEnemy, null, 100, 10000);
+                                    }
+                                    Utility.currRoom.isFog = false;
+                                    Utility.currRoom.isCurrRoom = true;
+
+                                    break;
                                 }
-                                Utility.player.Teleport(Room.ROOM_SIZE, Room.ROOM_SIZE);
-
-                                Utility.currRoom.isCurrRoom = false;
-                                Utility.currRoom.StopEnemies();
-                                Utility.currRoom.StopNPC();
-                                if (Utility.currRoom.enemyTimer != null)
-                                {
-                                    Utility.currRoom.enemyTimer.Dispose();
-                                }
-
-                                //Utility.currRoom.enemyTimer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
-
-                                Utility.currRoom = map.field[currFieldY, currFieldX];
-                                if (Utility.currRoom.type == 0)
-                                {
-                                    Utility.currRoom.PlayEnemies();
-                                    Utility.currRoom.PlayNPC();
-                                    Utility.currRoom.enemyTimer = new Timer(Utility.currRoom.CreateEnemy, null, 100, 10000);
-                                }
-                                Utility.currRoom.isFog = false;
-                                Utility.currRoom.isCurrRoom = true;
-
-                                break;
                             }
                         }
                     }
 
                     //적에게 이동
-                    Enemy tmp = Utility.currRoom.FindEnemiesAt(currX, currY);
+                    Enemy enemy = Utility.currRoom.FindEnemiesAt(currX, currY);
                     for (int i = 0; i < Utility.currRoom.enemies.Count; i++)
                     {
                         Utility.currRoom.enemies[i].playerChange = true;
                     }
-                    if (tmp != null && tmp.isLive)
+                    if (enemy != null && enemy.isLive)
                     {
                         Utility.player.hitPoint -= 1;
+                        enemy.enemyMoveTimer.Dispose();
                         if (Utility.player.hitPoint == 0)
                         {
-                            PrintMap(line);
-
-                            printTimer.Dispose();
-                            return;
-                        }                        
+                            Utility.player.isLive = false;
+                            Utility.currRoom.enemies.RemoveAll(x => x.X == enemy.X && x.Y == enemy.Y);
+                        }
+                        Utility.currRoom.enemies.RemoveAll(x => x.X == enemy.X && x.Y == enemy.Y);
                     }
 
                     //npc에게 이동
@@ -243,17 +255,66 @@ namespace homework_cs.Hw0620
                 if (isAttack)
                 {
 
-                    if (Utility.player.score > 5 && !Utility.player.isCoolTime)
+                    if (Utility.player.score >= 5 && !Utility.player.isCoolTime)
                     {
                         Utility.player.isCoolTime = true;
                         Utility.player.attackTimer = new Timer(Utility.player.AttackTimer, null, 1000, 0);
 
                         int nextX = Utility.player.GetNextX(direction);
                         int nextY = Utility.player.GetNextY(direction);
-                        Enemy currEnemy = Utility.currRoom.FindEnemiesAt(nextX, nextY);
 
-                        AttackEffect = new MyObject(nextX, nextY);
+                        Utility.player.score -= 5;
                         
+                        AttackEffect.Add(new MyEffect(nextX, nextY, 0));
+
+                        if (Utility.player.weapon == 1)
+                        {
+                            if (direction / 2 == 0)//양쪽 보는중
+                            {
+                                AttackEffect.Add(new MyEffect(nextX, nextY + 1, 0));
+                                AttackEffect.Add(new MyEffect(nextX, nextY - 1, 0));
+                            }
+                            else if (direction / 2 == 1)//위쪽 보는중
+                            {
+                                AttackEffect.Add(new MyEffect(nextX+1, nextY, 0));
+                                AttackEffect.Add(new MyEffect(nextX-1, nextY, 0));
+                            }
+                        } 
+                        else if (Utility.player.weapon == 2)
+                        {
+                            if (direction == 0)//오른쪽 보는중
+                            {
+                                AttackEffect.Add(new MyEffect(nextX + 1, nextY, 0));
+                                AttackEffect.Add(new MyEffect(nextX + 2, nextY, 0));
+                            }
+                            else if (direction == 1)//왼쪽 보는중
+                            {
+                                AttackEffect.Add(new MyEffect(nextX - 1, nextY, 0));
+                                AttackEffect.Add(new MyEffect(nextX - 2, nextY, 0));
+                            }
+                            else if (direction == 2)//위쪽 보는중
+                            {
+                                AttackEffect.Add(new MyEffect(nextX, nextY-1, 0));
+                                AttackEffect.Add(new MyEffect(nextX, nextY-2, 0));
+                            }
+                            else if (direction == 3)//아래쪽 보는중
+                            {
+                                AttackEffect.Add(new MyEffect(nextX, nextY + 1, 0));
+                                AttackEffect.Add(new MyEffect(nextX, nextY + 2, 0));
+                            }
+                        }
+                        
+                    }
+
+                    for (int i = 0; i < AttackEffect.Count; i++)
+                    {
+                        if (AttackEffect[i].type == -1) continue;
+
+                        int nextX = AttackEffect[i].X;
+                        int nextY = AttackEffect[i].Y;
+
+                        //적 공격
+                        Enemy currEnemy = Utility.currRoom.FindEnemiesAt(nextX, nextY);
                         if (currEnemy != null)
                         {
                             if (currEnemy.isLive)
@@ -269,8 +330,8 @@ namespace homework_cs.Hw0620
                             continue;
                         }
 
+                        //npc 공격
                         NonPlayableCharacter currNPC = Utility.currRoom.FindNPCAt(nextX, nextY);
-
                         if (currNPC != null)
                         {
                             if (currNPC.isLive)
@@ -285,24 +346,23 @@ namespace homework_cs.Hw0620
                             continue;
                         }
 
+                        //벽 공격
                         if (Utility.currRoom.roomInfomation[nextY, nextX] == 2)
                         {
                             Utility.player.HoldXY(ref nextX, ref nextY, Room.ROOM_SIZE, Room.ROOM_SIZE);
                             Utility.currRoom.roomInfomation[nextY, nextX] = 0;
-                            Utility.player.score -= 5;
 
                             continue;
                         }
 
+                        //함정 공격
                         if (Utility.currRoom.roomInfomation[nextY, nextX] == 1)
                         {
                             Utility.player.HoldXY(ref nextX, ref nextY, Room.ROOM_SIZE, Room.ROOM_SIZE);
                             Utility.currRoom.roomInfomation[nextY, nextX] = 0;
-                            Utility.player.score -= 0;
 
                             continue;
                         }
-                        
                     }
                     
                 }
@@ -320,7 +380,7 @@ namespace homework_cs.Hw0620
                     {
                         if (currNPC.isLive)
                         {
-                            //퀘스트 받는곳
+
                         }
                         continue;
                     }
@@ -339,12 +399,13 @@ namespace homework_cs.Hw0620
                 for (int x = 0; x < Room.ROOM_SIZE; x++)
                 {
                     //이펙트 1순위
-                    if (AttackEffect!=null)
+                    if (AttackEffect!=null && AttackEffect.Count>0)
                     {
-                        if (AttackEffect.X == x && AttackEffect.Y == y)
+                        MyEffect currEffect = AttackEffect.FindAll(effect => (effect.X == x && effect.Y == y)).FirstOrDefault();
+                        if (currEffect != null)
                         {
-                            line[y] += ".8.／.";
-                            AttackEffect = null;
+                            line[y] += ".8."+ MyEffect.ATTACK_STRING[currEffect.type]+ ".";
+                            AttackEffect.Remove(currEffect);
                             continue;
                         }                        
                     }
@@ -389,38 +450,18 @@ namespace homework_cs.Hw0620
                     {
                         if (npc.isLive)
                         {
-                            switch (npc.hitPoint)
+                            if (0 <= npc.hitPoint && npc.hitPoint < 10)
                             {
-                                case 1:
-                                case 2:
-                                case 3:
-                                case 4:
-                                case 5:
-                                case 6:
-                                case 7:
-                                case 8:
-                                case 9:
-                                    line[y] += ".9.";
-                                    break;
-                                case 10:
-                                case 11:
-                                case 12:
-                                case 13:
-                                case 14:
-                                case 15:
-                                case 16:
-                                case 17:
-                                case 18:
-                                case 19:
-                                case 20:
-                                    line[y] += ".10.";
-                                    break;
-                                default:
-                                    line[y] += ".11.";
-                                    break;
+                                line[y] += ".9.";
                             }
-                            line[y] += "★.";
-                            
+                            else if (10 <= npc.hitPoint && npc.hitPoint <= 20)
+                            {
+                                line[y] += ".10.";
+                            }
+                            else{
+                                line[y] += ".11.";
+                            }
+                            line[y] += "★.";                            
                         }
                         else if (!tmp.isLive)
                         {
@@ -432,41 +473,49 @@ namespace homework_cs.Hw0620
                     //플레이어 4순위
                     if (Utility.player.X == x && Utility.player.Y == y)
                     {
-                        switch (Utility.player.hitPoint)
+                        if (Utility.player.isLive)
                         {
-                            case 1:
-                                line[y] += ".6.";
-                                break;
-                            case 2:
-                                line[y] += ".5.";
-                                break;
-                            case 3:
-                                line[y] += ".4.";
-                                break;
-                            default:
-                                line[y] += ".0.";
-                                break;
+                            switch (Utility.player.hitPoint)
+                            {
+                                case 1:
+                                    line[y] += ".6.";
+                                    break;
+                                case 2:
+                                    line[y] += ".5.";
+                                    break;
+                                case 3:
+                                    line[y] += ".4.";
+                                    break;
+                                default:
+                                    line[y] += ".0.";
+                                    break;
+                            }
+                            switch (direction)
+                            {
+                                case 0:
+                                    line[y] += "▶.";
+                                    break;
+                                case 1:
+                                    line[y] += "◀.";
+                                    break;
+                                case 2:
+                                    line[y] += "▲.";
+                                    break;
+                                case 3:
+                                    line[y] += "▼.";
+                                    break;
+                                case 4:
+                                    line[y] += "！.";
+                                    break;
+                                default:
+                                    line[y] += "나.";
+                                    break;
+                            }
+
                         }
-                        switch (direction)
+                        else
                         {
-                            case 0:
-                                line[y] += "▶.";
-                                break;
-                            case 1:
-                                line[y] += "◀.";
-                                break;
-                            case 2:
-                                line[y] += "▲.";
-                                break;
-                            case 3:
-                                line[y] += "▼.";
-                                break;
-                            case 4:
-                                line[y] += "！.";
-                                break;
-                            default:
-                                line[y] += "나.";
-                                break;
+                            line[y] += ".3.Π.";
                         }
                         continue;
                     }

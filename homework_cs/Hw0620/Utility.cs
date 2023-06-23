@@ -105,12 +105,35 @@ namespace homework_cs.Hw0620
                 }// 1행 출력 종료
 
             }//모든 행 출력 종료
-            Console.SetCursorPosition(0, 20);
-            Console.Write("{0,5}\t{1,3}\t\t",
-                                            Utility.player.score, 
-                                            Utility.player.isCoolTime? "쿨타임": 
-                                                    Utility.player.score>=5?"공격 가능" : "공격 불가능");
-            Console.SetCursorPosition(0, 21);
+            Console.SetCursorPosition(0, 17);
+            Console.Write("{0,5}\t", Utility.player.score);
+            if (Utility.player.score < 5)
+            {
+                Console.Write("공격 불가능\t\t");
+            }
+            else
+            {
+
+                if (Utility.player.isCoolTime)
+                {
+                    Console.Write("쿨타임\t\t");
+                }
+                else
+                {
+                    Console.Write("공격 가능\t");
+                }
+            }
+
+            Console.SetCursorPosition(0, 18);
+            if (Utility.player.score < 10)
+            { 
+                Console.Write("포탈 입장 불가능\t\t");            
+            }
+            else 
+            {
+                Console.Write("포탈 입장 가능\t\t");
+            }
+            Console.SetCursorPosition(0, 19);
 
             isWork = false;
         }

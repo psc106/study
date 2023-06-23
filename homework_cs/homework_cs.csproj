@@ -60,6 +60,7 @@
     <Compile Include="Hw0616\IClickable.cs" />
     <Compile Include="Hw0620\Map.cs" />
     <Compile Include="Hw0620\MyObject.cs" />
+    <Compile Include="Hw0620\Quest.cs" />
     <Compile Include="Hw0620\Utility.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

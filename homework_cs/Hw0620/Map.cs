@@ -327,7 +327,7 @@ namespace homework_cs.Hw0620
             }
 
             NPC = new List<NonPlayableCharacter>();
-            NonPlayableCharacter questNPC = new NonPlayableCharacter(ROOM_SIZE / 2 - 1, ROOM_SIZE / 2 - 1, 1);
+            NonPlayableCharacter questNPC = new NonPlayableCharacter(ROOM_SIZE / 2 - 1, ROOM_SIZE / 2 - 1, -2);
             NPC.Add(questNPC);
             PlayNPC();
 
@@ -365,7 +365,7 @@ namespace homework_cs.Hw0620
 
             if (!this.isFog && this.portal[2] != null)
             {
-                line[0] += "　↕　";
+                line[0] += "　↓　";
             }
             else
             {
@@ -374,7 +374,7 @@ namespace homework_cs.Hw0620
 
             if (!this.isFog && this.portal[1] != null)
             {
-                line[1] += "↔";
+                line[1] += "→";
             }
             else
             {
@@ -399,7 +399,7 @@ namespace homework_cs.Hw0620
 
             if (!this.isFog && this.portal[0] != null)
             {
-                line[1] += "↔";
+                line[1] += "←";
             }
             else
             {
@@ -407,7 +407,7 @@ namespace homework_cs.Hw0620
             }
             if (!this.isFog && this.portal[3] != null)
             {
-                line[2] += "　↕　";
+                line[2] += "　↑　";
             }
             else
             {
@@ -473,10 +473,12 @@ namespace homework_cs.Hw0620
         }
         public int GetElementAt(int x, int y)
         {
+            if (roomInfomation == null) return int.MinValue;
             return roomInfomation[y, x];
         }
         public Enemy FindEnemiesAt(int x, int y)
         {
+            if (enemies == null) return null;
             for (int i = 0; i < enemies.Count; i++)
             {
                 if (enemies[i] == null) continue;
@@ -512,6 +514,7 @@ namespace homework_cs.Hw0620
 
         public NonPlayableCharacter FindNPCAt(int x, int y)
         {
+            if (NPC == null) return null;
             for (int i = 0; i < NPC.Count; i++)
             {
                 if (NPC[i] == null) continue;
